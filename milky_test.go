@@ -2,6 +2,8 @@ package Milky_go_sdk
 
 import (
 	"fmt"
+	"os"
+	"strconv"
 	"testing"
 )
 
@@ -21,7 +23,8 @@ func (l *TestLogger) Log(level Level, keyvals ...interface{}) error {
 
 func TestMilky(m *testing.T) {
 	logger := &TestLogger{Level: LevelDebug}
-	session, err := New("ws://127.0.0.1:3039/event", logger)
+	fmt.Println("Gateway WS:", os.Getenv("TEST_WS_GATEWAY"))
+	session, err := New(os.Getenv("TEST_WS_GATEWAY"), os.Getenv("TEST_REST_GATEWAY"), logger)
 	if err != nil {
 		m.Fatalf("Failed to create session: %v", err)
 	}
@@ -41,5 +44,26 @@ func TestMilky(m *testing.T) {
 	if err != nil {
 		m.Fatalf("Failed to open session: %v", err)
 	}
+	info, err := session.GetLoginInfo()
+	if err != nil {
+		m.Fatalf("Failed to get login info: %v", err)
+	}
+	_ = logger.Log(LevelInfo, "Login info: UserId %d, Nickname %s", info.UIN, info.Nickname)
+	text := ReceiveTextElement{
+		Text: "Hello, this is a test message from MilkyGo SDK!",
+	}
+	var elements []IMessageElement
+	elements = append(elements, &text)
+	// get from env
+	targetGroupID := os.Getenv("TEST_TARGET_GROUP_ID")
+	targetGroupIDInt, err := strconv.ParseInt(targetGroupID, 10, 64)
+	if err != nil {
+		m.Fatalf("Invalid TEST_TARGET_GROUP_ID: %v", err)
+	}
+	message, err := session.SendGroupMessage(targetGroupIDInt, &elements)
+	if err != nil {
+		m.Fatalf("Failed to send group message: %v", err)
+	}
+	_ = logger.Log(LevelInfo, "Sent message: MessageId %d, Time %d", message.MessageSeq, message.Time)
 	select {}
 }

@@ -13,6 +13,8 @@ type Session struct {
 	Token string // rest authentication token
 	// stores sessions current websocket gateway
 	WSGateway string
+	// stores sessions current rest gateway
+	RestGateway string
 
 	LogLevel int
 

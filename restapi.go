@@ -21,7 +21,7 @@ var (
 // All error constants
 var (
 	ErrJSONUnmarshal = errors.New("json unmarshal")
-	ErrUnauthorized  = errors.New("HTTP request was unauthorized. This could be because the provided token was not a bot token. Please add \"Bot \" to the start of your token. https://discord.com/developers/docs/reference#authentication-example-bot-token-authorization-header")
+	ErrUnauthorized  = errors.New("HTTP request was unauthorized")
 )
 
 // RESTError stores error information about a request with a bad response code.
@@ -108,8 +108,12 @@ func WithContext(ctx context.Context) RequestOption {
 	}
 }
 
+func (s *Session) beforeRequest() {
+	SetGateway(s.RestGateway)
+}
+
 // Request makes a (GET/POST/...) Requests to REST API with JSON data.
-func (s *Session) Request(method, urlStr string, data interface{}, options ...RequestOption) (response []byte, err error) {
+func (s *Session) Request(method string, urlStr func() string, data interface{}, options ...RequestOption) (response []byte, err error) {
 	var body []byte
 	if data != nil {
 		body, err = Marshal(data)
@@ -117,17 +121,8 @@ func (s *Session) Request(method, urlStr string, data interface{}, options ...Re
 			return
 		}
 	}
-
-	return s.RequestRaw(method, urlStr, "application/json", body, 0, options...)
-}
-
-// RequestRaw makes a (GET/POST/...) Requests to REST API.
-// Preferably use the other Request* methods but this lets you send JSON directly if that's what you have.
-// Sequence is the sequence number, if it fails with a 502 it will
-// retry with sequence+1 until it either succeeds or sequence >= session.MaxRestRetries
-func (s *Session) RequestRaw(method, urlStr, contentType string, b []byte, sequence int, options ...RequestOption) (response []byte, err error) {
-
-	return s.RequestBase(method, urlStr, contentType, b, sequence, options...)
+	s.beforeRequest()
+	return s.RequestBase(method, urlStr(), "application/json", body, 0, options...)
 }
 
 // RequestBase makes a request
@@ -145,8 +140,6 @@ func (s *Session) RequestBase(method, urlStr, contentType string, b []byte, sequ
 		req.Header.Set("authorization", s.Token)
 	}
 
-	// Discord's API returns a 400 Bad Request is Content-Type is set, but the
-	// request body is empty.
 	if b != nil {
 		req.Header.Set("Content-Type", contentType)
 	}
@@ -196,7 +189,7 @@ func (s *Session) RequestBase(method, urlStr, contentType string, b []byte, sequ
 			_ = s.Logger.Log(LevelInfo, "%s Failed (%s), Retrying...", urlStr, resp.Status)
 			response, err = s.RequestBase(method, urlStr, contentType, b, sequence+1, options...)
 		} else {
-			err = fmt.Errorf("Exceeded Max retries HTTP %s, %s", resp.Status, response)
+			err = fmt.Errorf("exceeded Max retries HTTP %s, %s", resp.Status, response)
 		}
 	case http.StatusUnauthorized:
 		if strings.Index(s.Token, "Bot ") != 0 {
@@ -218,4 +211,53 @@ func unmarshal(data []byte, v interface{}) error {
 	}
 
 	return nil
+}
+
+func (s *Session) GetLoginInfo() (*LoginInfo, error) {
+	request, err := s.Request("POST", EndpointGetLoginInfo, "{}", WithHeader("Content-Type", "application/json"))
+	if err != nil {
+		return nil, err
+	}
+	var apiResponse APIResponse
+	var loginInfo LoginInfo
+	if err = unmarshal(request, &apiResponse); err != nil {
+		_ = s.Logger.Log(LevelError, "Failed to unmarshal login info: %v", err)
+		return nil, err
+	}
+	if apiResponse.Data != nil {
+		if err = unmarshal(apiResponse.Data, &loginInfo); err != nil {
+			_ = s.Logger.Log(LevelError, "Failed to unmarshal login info data: %v", err)
+			return nil, err
+		}
+	} else {
+		_ = s.Logger.Log(LevelError, "Login info data is nil")
+		return nil, fmt.Errorf("login info data is nil")
+	}
+	return &loginInfo, nil
+}
+
+func (s *Session) SendGroupMessage(groupID int64, message *[]IMessageElement) (*MessageRet, error) {
+	request, err := s.Request("POST", EndpointSendGroupMessage, map[string]interface{}{
+		"group_id": groupID,
+		"message":  message,
+	}, WithHeader("Content-Type", "application/json"))
+	if err != nil {
+		return nil, err
+	}
+	var apiResponse APIResponse
+	if err = unmarshal(request, &apiResponse); err != nil {
+		_ = s.Logger.Log(LevelError, "Failed to unmarshal send group message response: %v", err)
+		return nil, err
+	}
+	var messageRet MessageRet
+	if apiResponse.Data != nil {
+		if err = unmarshal(apiResponse.Data, &messageRet); err != nil {
+			_ = s.Logger.Log(LevelError, "Failed to unmarshal message ret data: %v", err)
+			return nil, err
+		}
+	} else {
+		_ = s.Logger.Log(LevelError, "Send group message data is nil")
+		return nil, fmt.Errorf("send group message data is nil")
+	}
+	return &messageRet, nil
 }

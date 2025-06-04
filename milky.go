@@ -8,7 +8,7 @@ import (
 
 const version = "0.1.0"
 
-func New(wsGateway string, logger Logger) (s *Session, err error) {
+func New(wsGateway string, restGateway string, logger Logger) (s *Session, err error) {
 	// Create an empty Session interface.
 	s = &Session{
 		ShouldReconnectOnError: true,
@@ -18,6 +18,7 @@ func New(wsGateway string, logger Logger) (s *Session, err error) {
 		UserAgent:              "MilkyGo (" + wsGateway + ", v" + version + ")",
 		LastHeartbeatAck:       time.Now().UTC(),
 		WSGateway:              wsGateway,
+		RestGateway:            restGateway,
 		Logger:                 logger,
 	}
 

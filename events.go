@@ -24,6 +24,11 @@ type ReceiveMessage struct {
 	GroupMember *GroupMemberInfo  `json:"group_member"`
 }
 
+type MessageRet struct {
+	MessageSeq int64 `json:"message_seq"`
+	Time       int64 `json:"time"`
+}
+
 func (r *ReceiveMessage) UnmarshalJSON(data []byte) error {
 	raw := map[string]json.RawMessage{}
 	if err := json.Unmarshal(data, &raw); err != nil {
