@@ -11,33 +11,33 @@ func handlerForInterface(handler interface{}) EventHandler {
 	switch v := handler.(type) {
 	case func(*Session, interface{}):
 		return interfaceEventHandler(v)
-	case func(*Session, *IncomingMessage):
-		return messageCreateEventHandler(v)
+	case func(*Session, *ReceiveMessage):
+		return messageReceiveEventHandler(v)
 	}
 
 	return nil
 }
 
-// messageCreateEventHandler is an event handler for MessageCreate events.
-type messageCreateEventHandler func(*Session, *IncomingMessage)
+// messageReceiveEventHandler is an event handler for ReceiveMessage events.
+type messageReceiveEventHandler func(*Session, *ReceiveMessage)
 
 // Type returns the event type for MessageCreate events.
-func (eh messageCreateEventHandler) Type() string {
+func (eh messageReceiveEventHandler) Type() string {
 	return messageReceiveEventType
 }
 
 // New returns a new instance of MessageCreate.
-func (eh messageCreateEventHandler) New() interface{} {
-	return &IncomingMessage{}
+func (eh messageReceiveEventHandler) New() interface{} {
+	return &ReceiveMessage{}
 }
 
 // Handle is the handler for MessageCreate events.
-func (eh messageCreateEventHandler) Handle(s *Session, i interface{}) {
-	if t, ok := i.(*IncomingMessage); ok {
+func (eh messageReceiveEventHandler) Handle(s *Session, i interface{}) {
+	if t, ok := i.(*ReceiveMessage); ok {
 		eh(s, t)
 	}
 }
 
 func init() {
-	registerInterfaceProvider(messageCreateEventHandler(nil))
+	registerInterfaceProvider(messageReceiveEventHandler(nil))
 }

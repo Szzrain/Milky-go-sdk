@@ -12,30 +12,49 @@ type Event struct {
 	Struct interface{} `json:"-"`
 }
 
-type IncomingMessage struct {
-	PeerId     int64             `json:"peer_id"`
-	MessageSeq int64             `json:"message_seq"`
-	SenderId   int64             `json:"sender_id"`
-	Time       int64             `json:"time"`
-	Segments   []IMessageElement `json:"segments"`
+type ReceiveMessage struct {
+	PeerId       int64  `json:"peer_id"`
+	MessageSeq   int64  `json:"message_seq"`
+	SenderId     int64  `json:"sender_id"`
+	Time         int64  `json:"time"`
+	MessageScene string `json:"message_scene"` // "private", "group", etc.
+
+	Segments    []IMessageElement `json:"segments"`
+	Group       *GroupInfo        `json:"group"`
+	GroupMember *GroupMemberInfo  `json:"group_member"`
 }
 
-func (i *IncomingMessage) UnmarshalJSON(data []byte) error {
+func (r *ReceiveMessage) UnmarshalJSON(data []byte) error {
 	raw := map[string]json.RawMessage{}
 	if err := json.Unmarshal(data, &raw); err != nil {
 		return err
 	}
-	if err := json.Unmarshal(raw["peer_id"], &i.PeerId); err != nil {
+	if err := json.Unmarshal(raw["peer_id"], &r.PeerId); err != nil {
 		return err
 	}
-	if err := json.Unmarshal(raw["message_seq"], &i.MessageSeq); err != nil {
+	if err := json.Unmarshal(raw["message_seq"], &r.MessageSeq); err != nil {
 		return err
 	}
-	if err := json.Unmarshal(raw["sender_id"], &i.SenderId); err != nil {
+	if err := json.Unmarshal(raw["sender_id"], &r.SenderId); err != nil {
 		return err
 	}
-	if err := json.Unmarshal(raw["time"], &i.Time); err != nil {
+	if err := json.Unmarshal(raw["time"], &r.Time); err != nil {
 		return err
+	}
+	if err := json.Unmarshal(raw["message_scene"], &r.MessageScene); err != nil {
+		return err
+	}
+	if rawGroup, ok := raw["group"]; ok {
+		var group GroupInfo
+		if err := json.Unmarshal(rawGroup, &group); err != nil {
+			return err
+		}
+	}
+	if rawGroupMember, ok := raw["group_member"]; ok {
+		var groupMember GroupMemberInfo
+		if err := json.Unmarshal(rawGroupMember, &groupMember); err != nil {
+			return err
+		}
 	}
 	if rawSegments, ok := raw["segments"]; ok {
 		var elements []RawMessageElement
@@ -49,122 +68,41 @@ func (i *IncomingMessage) UnmarshalJSON(data []byte) error {
 				if err := json.Unmarshal(element.Data, &textElement); err != nil {
 					return err
 				}
-				i.Segments = append(i.Segments, &textElement)
+				r.Segments = append(r.Segments, &textElement)
 			case string(At):
 				var atElement ReceiveAtElement
 				if err := json.Unmarshal(element.Data, &atElement); err != nil {
 					return err
 				}
-				i.Segments = append(i.Segments, &atElement)
+				r.Segments = append(r.Segments, &atElement)
 			case string(Image):
 				var imageElement ImageElement
 				if err := json.Unmarshal(element.Data, &imageElement); err != nil {
 					return err
 				}
-				i.Segments = append(i.Segments, &imageElement)
+				r.Segments = append(r.Segments, &imageElement)
 			case string(Record):
 				var recordElement RecordElement
 				if err := json.Unmarshal(element.Data, &recordElement); err != nil {
 					return err
 				}
-				i.Segments = append(i.Segments, &recordElement)
+				r.Segments = append(r.Segments, &recordElement)
 			case string(Face):
 				var faceElement FaceElement
 				if err := json.Unmarshal(element.Data, &faceElement); err != nil {
 					return err
 				}
-				i.Segments = append(i.Segments, &faceElement)
+				r.Segments = append(r.Segments, &faceElement)
 			case string(Reply):
 				var replyElement ReplyElement
 				if err := json.Unmarshal(element.Data, &replyElement); err != nil {
 					return err
 				}
-				i.Segments = append(i.Segments, &replyElement)
+				r.Segments = append(r.Segments, &replyElement)
 			default:
 				continue // Ignore unknown types.
 			}
 		}
-
 	}
 	return nil
-}
-
-type (
-	RawMessageElement struct {
-		Type string          `json:"type"`
-		Data json.RawMessage `json:"data"`
-	}
-
-	IMessageElement interface {
-		Type() ElementType
-	}
-
-	ElementType string
-)
-
-// Copied from sealdice/sealdice-core
-const (
-	Text   ElementType = "text"        // 文本
-	At                 = "mention"     // 艾特
-	AtAll              = "mention_all" // 艾特
-	Video              = "video"       // 文件
-	Image              = "image"       // 图片
-	Reply              = "reply"       // 回复
-	Record             = "record"      // 语音
-	Face               = "face"        // 表情
-)
-
-const maxFileSize = 1024 * 1024 * 50 // 50MB
-
-type ReceiveTextElement struct {
-	Text string `json:"text"`
-}
-
-func (t *ReceiveTextElement) Type() ElementType {
-	return Text
-}
-
-type ReceiveAtElement struct {
-	UserID string `json:"user_id"`
-}
-
-func (t *ReceiveAtElement) Type() ElementType {
-	return At
-}
-
-type ReplyElement struct {
-	MessageSeq string `json:"message_seq"` // 回复的目标消息ID
-}
-
-func (t *ReplyElement) Type() ElementType {
-	return Reply
-}
-
-type ImageElement struct {
-	ResourceID string `json:"resource_id"` // 图片资源ID
-	TempURL    string `json:"temp_url"`
-	Summary    string `json:"summary"`  // 图片摘要
-	SubType    string `json:"sub_type"` // 图片子类型
-}
-
-func (l *ImageElement) Type() ElementType {
-	return Image
-}
-
-type RecordElement struct {
-	ResourceID string `json:"resource_id"` // 资源ID
-	TempURL    string `json:"temp_url"`
-	Duration   int32  `json:"duration"`
-}
-
-func (r *RecordElement) Type() ElementType {
-	return Record
-}
-
-type FaceElement struct {
-	FaceID string `json:"face_id"`
-}
-
-func (f *FaceElement) Type() ElementType {
-	return Face
 }

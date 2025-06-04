@@ -10,6 +10,7 @@ import (
 type Session struct {
 	sync.RWMutex
 
+	Token string // rest authentication token
 	// stores sessions current websocket gateway
 	WSGateway string
 
@@ -60,4 +61,9 @@ type Session struct {
 
 	// used to make sure gateway websocket writes do not happen concurrently
 	wsMutex sync.Mutex
+}
+
+type APIErrorMessage struct {
+	Code    int    `json:"code"`
+	Message string `json:"message"`
 }

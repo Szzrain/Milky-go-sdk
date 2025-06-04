@@ -25,11 +25,17 @@ func TestMilky(m *testing.T) {
 	if err != nil {
 		m.Fatalf("Failed to create session: %v", err)
 	}
-	session.AddHandler(func(session2 *Session, m *IncomingMessage) {
+	session.AddHandler(func(session2 *Session, m *ReceiveMessage) {
 		if m == nil {
 			return
 		}
-		fmt.Printf("Received message: Sender %d, Content: %v\n", m.SenderId, m.Segments)
+		fmt.Printf("Received message: Sender %d", m.SenderId)
+		if m.Segments != nil {
+			for _, segment := range m.Segments {
+				fmt.Printf(" Segment: %v", segment)
+			}
+		}
+		fmt.Println()
 	})
 	err = session.Open()
 	if err != nil {
