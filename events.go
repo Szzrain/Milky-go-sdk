@@ -54,12 +54,14 @@ func (r *ReceiveMessage) UnmarshalJSON(data []byte) error {
 		if err := json.Unmarshal(rawGroup, &group); err != nil {
 			return err
 		}
+		r.Group = &group
 	}
 	if rawGroupMember, ok := raw["group_member"]; ok {
 		var groupMember GroupMemberInfo
 		if err := json.Unmarshal(rawGroupMember, &groupMember); err != nil {
 			return err
 		}
+		r.GroupMember = &groupMember
 	}
 	if rawSegments, ok := raw["segments"]; ok {
 		var elements []RawMessageElement
