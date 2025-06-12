@@ -17,10 +17,11 @@ type ReceiveMessage struct {
 	MessageSeq   int64  `json:"message_seq"`
 	SenderId     int64  `json:"sender_id"`
 	Time         int64  `json:"time"`
-	MessageScene string `json:"message_scene"` // "private", "group", etc.
+	MessageScene string `json:"message_scene"` // "friend", "group", etc.
 
 	Segments    []IMessageElement `json:"segments"`
 	Group       *GroupInfo        `json:"group"`
+	Friend      *Friend           `json:"friend"`
 	GroupMember *GroupMemberInfo  `json:"group_member"`
 }
 
@@ -62,6 +63,13 @@ func (r *ReceiveMessage) UnmarshalJSON(data []byte) error {
 			return err
 		}
 		r.GroupMember = &groupMember
+	}
+	if rawFriend, ok := raw["friend"]; ok {
+		var friend Friend
+		if err := json.Unmarshal(rawFriend, &friend); err != nil {
+			return err
+		}
+		r.Friend = &friend
 	}
 	if rawSegments, ok := raw["segments"]; ok {
 		var elements []RawMessageElement

@@ -46,7 +46,7 @@ type FriendCategory struct {
 
 type Friend struct {
 	UserID   int64           `json:"user_id"`
-	QID      int64           `json:"qid,omitempty"`
+	QID      string          `json:"qid,omitempty"`
 	Nickname string          `json:"nickname"`
 	Sex      string          `json:"sex"`
 	Remark   string          `json:"remark"`
