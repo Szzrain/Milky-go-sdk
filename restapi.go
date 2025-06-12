@@ -261,3 +261,29 @@ func (s *Session) SendGroupMessage(groupID int64, message *[]IMessageElement) (*
 	}
 	return &messageRet, nil
 }
+
+func (s *Session) SendPrivateMessage(userID int64, message *[]IMessageElement) (*MessageRet, error) {
+	request, err := s.Request("POST", EndpointSendPrivateMessage, map[string]interface{}{
+		"user_id": userID,
+		"message": message,
+	}, WithHeader("Content-Type", "application/json"))
+	if err != nil {
+		return nil, err
+	}
+	var apiResponse APIResponse
+	if err = unmarshal(request, &apiResponse); err != nil {
+		_ = s.Logger.Log(LevelError, "Failed to unmarshal send private message response: %v", err)
+		return nil, err
+	}
+	var messageRet MessageRet
+	if apiResponse.Data != nil {
+		if err = unmarshal(apiResponse.Data, &messageRet); err != nil {
+			_ = s.Logger.Log(LevelError, "Failed to unmarshal message ret data: %v", err)
+			return nil, err
+		}
+	} else {
+		_ = s.Logger.Log(LevelError, "Send private message data is nil")
+		return nil, fmt.Errorf("send private message data is nil")
+	}
+	return &messageRet, nil
+}

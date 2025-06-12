@@ -139,15 +139,15 @@ type GroupInvitation struct {
 
 const maxFileSize = 1024 * 1024 * 50 // 50MB
 
-type ReceiveTextElement struct {
+type TextElement struct {
 	Text string `json:"text"`
 }
 
-func (t *ReceiveTextElement) Type() ElementType {
+func (t *TextElement) Type() ElementType {
 	return Text
 }
 
-func (t *ReceiveTextElement) MarshalJSON() ([]byte, error) {
+func (t *TextElement) MarshalJSON() ([]byte, error) {
 	return json.Marshal(&struct {
 		Type ElementType `json:"type"`
 		Data struct {
@@ -163,15 +163,15 @@ func (t *ReceiveTextElement) MarshalJSON() ([]byte, error) {
 	})
 }
 
-type ReceiveAtElement struct {
+type AtElement struct {
 	UserID int64 `json:"user_id"`
 }
 
-func (t *ReceiveAtElement) Type() ElementType {
+func (t *AtElement) Type() ElementType {
 	return At
 }
 
-func (t *ReceiveAtElement) MarshalJSON() ([]byte, error) {
+func (t *AtElement) MarshalJSON() ([]byte, error) {
 	return json.Marshal(&struct {
 		Type ElementType `json:"type"`
 		Data struct {
@@ -205,7 +205,6 @@ func (t *ReceiveAtAllElement) MarshalJSON() ([]byte, error) {
 
 type ReplyElement struct {
 	MessageSeq int64 `json:"message_seq"` // 回复的目标消息ID
-	ClientSeq  int64 `json:"client_seq"`
 }
 
 func (t *ReplyElement) Type() ElementType {
@@ -217,16 +216,13 @@ func (t *ReplyElement) MarshalJSON() ([]byte, error) {
 		Type ElementType `json:"type"`
 		Data struct {
 			MessageSeq int64 `json:"message_seq"`
-			ClientSeq  int64 `json:"client_seq,omitempty"`
 		} `json:"data"`
 	}{
 		Type: t.Type(),
 		Data: struct {
 			MessageSeq int64 `json:"message_seq"`
-			ClientSeq  int64 `json:"client_seq,omitempty"`
 		}{
 			MessageSeq: t.MessageSeq,
-			ClientSeq:  t.ClientSeq,
 		},
 	})
 }

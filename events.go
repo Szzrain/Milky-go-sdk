@@ -79,13 +79,13 @@ func (r *ReceiveMessage) UnmarshalJSON(data []byte) error {
 		for _, element := range elements {
 			switch element.Type {
 			case string(Text):
-				var textElement ReceiveTextElement
+				var textElement TextElement
 				if err := json.Unmarshal(element.Data, &textElement); err != nil {
 					return err
 				}
 				r.Segments = append(r.Segments, &textElement)
 			case string(At):
-				var atElement ReceiveAtElement
+				var atElement AtElement
 				if err := json.Unmarshal(element.Data, &atElement); err != nil {
 					return err
 				}
