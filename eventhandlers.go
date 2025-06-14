@@ -5,6 +5,7 @@ package Milky_go_sdk
 // Event type values are used to match the events returned
 const (
 	messageReceiveEventType = "message_receive"
+	friendRequestEventType  = "friend_request"
 )
 
 func handlerForInterface(handler interface{}) EventHandler {
@@ -13,6 +14,8 @@ func handlerForInterface(handler interface{}) EventHandler {
 		return interfaceEventHandler(v)
 	case func(*Session, *ReceiveMessage):
 		return messageReceiveEventHandler(v)
+	case func(*Session, *FriendRequest):
+		return friendRequestEventHandler(v)
 	}
 
 	return nil
@@ -38,6 +41,26 @@ func (eh messageReceiveEventHandler) Handle(s *Session, i interface{}) {
 	}
 }
 
+type friendRequestEventHandler func(*Session, *FriendRequest)
+
+// Type returns the event type for FriendRequest events.
+func (eh friendRequestEventHandler) Type() string {
+	return friendRequestEventType
+}
+
+// New returns a new instance of FriendRequest.
+func (eh friendRequestEventHandler) New() interface{} {
+	return &FriendRequest{}
+}
+
+// Handle is the handler for FriendRequest events.
+func (eh friendRequestEventHandler) Handle(s *Session, i interface{}) {
+	if t, ok := i.(*FriendRequest); ok {
+		eh(s, t)
+	}
+}
+
 func init() {
 	registerInterfaceProvider(messageReceiveEventHandler(nil))
+	registerInterfaceProvider(friendRequestEventHandler(nil))
 }

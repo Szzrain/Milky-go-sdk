@@ -32,6 +32,7 @@ type APIResponse struct {
 	Status  string          `json:"status"`
 	RetCode int             `json:"retcode"`
 	Data    json.RawMessage `json:"data"`
+	Message string          `json:"message,omitempty"` // 错误信息
 }
 
 type LoginInfo struct {

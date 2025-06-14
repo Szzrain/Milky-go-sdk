@@ -37,7 +37,7 @@ type resumePacket struct {
 
 // Open creates a websocket connection
 func (s *Session) Open() error {
-	_ = s.Logger.Log(LevelInfo, "called")
+	s.Logger.Debugf("called")
 
 	var err error
 
@@ -57,11 +57,11 @@ func (s *Session) Open() error {
 	}
 
 	// Connect to the WSGateway
-	_ = s.Logger.Log(LevelInfo, "connecting to gateway %s", s.WSGateway)
+	s.Logger.Debugf("connecting to gateway %s", s.WSGateway)
 	header := http.Header{}
 	s.wsConn, _, err = s.Dialer.Dial(s.WSGateway, header)
 	if err != nil {
-		_ = s.Logger.Log(LevelError, "error connecting to gateway %s, %s", s.WSGateway, err)
+		s.Logger.Errorf("error connecting to gateway %s, %s", s.WSGateway, err)
 		s.wsConn = nil // Just to be safe.
 		return err
 	}
@@ -86,7 +86,7 @@ func (s *Session) Open() error {
 	go s.heartbeat(s.wsConn, s.listening, h.HeartbeatInterval)
 	go s.listen(s.wsConn, s.listening)
 
-	_ = s.Logger.Log(LevelInfo, "exiting")
+	s.Logger.Debug("exiting")
 	return nil
 }
 
@@ -94,7 +94,7 @@ func (s *Session) Open() error {
 // listening channel is closed, or an error occurs.
 func (s *Session) listen(wsConn *websocket.Conn, listening <-chan interface{}) {
 
-	_ = s.Logger.Log(LevelInfo, "called")
+	s.Logger.Debug("called")
 
 	for {
 
@@ -111,15 +111,15 @@ func (s *Session) listen(wsConn *websocket.Conn, listening <-chan interface{}) {
 
 			if sameConnection {
 
-				_ = s.Logger.Log(LevelWarn, "error reading from gateway %s websocket, %s", s.WSGateway, err)
+				s.Logger.Warnf("error reading from gateway %s websocket, %s", s.WSGateway, err)
 				// There has been an error reading, close the websocket so that
 				// OnDisconnect event is emitted.
 				err := s.Close()
 				if err != nil {
-					_ = s.Logger.Log(LevelWarn, "error closing session connection, %s", err)
+					s.Logger.Warnf("error closing session connection, %s", err)
 				}
 
-				_ = s.Logger.Log(LevelInfo, "calling reconnect() now")
+				s.Logger.Infof("calling reconnect() now")
 				s.reconnect()
 			}
 
@@ -161,7 +161,7 @@ func (s *Session) HeartbeatLatency() time.Duration {
 // is still connected.
 func (s *Session) heartbeat(wsConn *websocket.Conn, listening <-chan interface{}, heartbeatIntervalMsec time.Duration) {
 
-	_ = s.Logger.Log(LevelInfo, "called")
+	s.Logger.Debug("called")
 
 	if listening == nil || wsConn == nil {
 		return
@@ -176,16 +176,16 @@ func (s *Session) heartbeat(wsConn *websocket.Conn, listening <-chan interface{}
 		last := s.LastHeartbeatAck
 		s.RUnlock()
 		sequence := 0
-		_ = s.Logger.Log(LevelDebug, "sending gateway websocket heartbeat seq %d", sequence)
+		s.Logger.Debugf("sending gateway websocket heartbeat seq %d", sequence)
 		s.wsMutex.Lock()
 		s.LastHeartbeatSent = time.Now().UTC()
 		err = wsConn.WriteJSON(heartbeatOp{1, int64(sequence)})
 		s.wsMutex.Unlock()
 		if err != nil || time.Now().UTC().Sub(last) > (heartbeatIntervalMsec*FailedHeartbeatAcks) {
 			if err != nil {
-				_ = s.Logger.Log(LevelError, "error sending heartbeat to gateway %s, %s", s.WSGateway, err)
+				s.Logger.Debugf("error sending heartbeat to gateway %s, %s", s.WSGateway, err)
 			} else {
-				_ = s.Logger.Log(LevelError, "haven't gotten a heartbeat ACK in %v, triggering a reconnection", time.Now().UTC().Sub(last))
+				s.Logger.Errorf("haven't gotten a heartbeat ACK in %v, triggering a reconnection", time.Now().UTC().Sub(last))
 			}
 			s.Close()
 			s.reconnect()
@@ -222,14 +222,14 @@ func (s *Session) onEvent(messageType int, message []byte) (*Event, error) {
 
 		z, err2 := zlib.NewReader(reader)
 		if err2 != nil {
-			_ = s.Logger.Log(LevelError, "error uncompressing websocket message, %s", err)
+			s.Logger.Errorf("error uncompressing websocket message, %s", err)
 			return nil, err2
 		}
 
 		defer func() {
 			err3 := z.Close()
 			if err3 != nil {
-				_ = s.Logger.Log(LevelWarn, "error closing zlib, %s", err)
+				s.Logger.Warnf("error closing zlib, %s", err)
 			}
 		}()
 
@@ -239,11 +239,11 @@ func (s *Session) onEvent(messageType int, message []byte) (*Event, error) {
 	// read earlier data from the reader
 	var rawData []byte
 	if rawData, err = io.ReadAll(reader); err != nil {
-		_ = s.Logger.Log(LevelError, "error reading websocket message, %s", err)
+		s.Logger.Errorf("error reading websocket message, %s", err)
 		return nil, err
 	}
 	// print in debug mode
-	_ = s.Logger.Log(LevelDebug, "received websocket message: %s", string(rawData))
+	s.Logger.Debugf("received websocket message: %s", string(rawData))
 
 	// Create a new buffer to hold the raw data.
 	var rawDataBuffer bytes.Buffer
@@ -253,7 +253,7 @@ func (s *Session) onEvent(messageType int, message []byte) (*Event, error) {
 	var e *Event
 	decoder := json.NewDecoder(&rawDataBuffer)
 	if err = decoder.Decode(&e); err != nil {
-		_ = s.Logger.Log(LevelError, "error decoding websocket message, %s", err)
+		s.Logger.Errorf("error decoding websocket message, %s", err)
 		return e, err
 	}
 
@@ -263,12 +263,12 @@ func (s *Session) onEvent(messageType int, message []byte) (*Event, error) {
 
 		// Attempt to unmarshal our event.
 		if err = json.Unmarshal(e.RawData, e.Struct); err != nil {
-			_ = s.Logger.Log(LevelError, "error unmarshalling %s event, %s", e.Type, err)
+			s.Logger.Errorf("error unmarshalling %s event, %s", e.Type, err)
 		}
 
 		s.handleEvent(e.Type, e.Struct)
 	} else {
-		_ = s.Logger.Log(LevelWarn, "unknown event: Type: %s, Data: %s", e.Type, string(e.RawData))
+		s.Logger.Warnf("unknown event: Type: %s, Data: %s", e.Type, string(e.RawData))
 	}
 	// s.handleEvent(eventEventType, e)
 
@@ -277,7 +277,7 @@ func (s *Session) onEvent(messageType int, message []byte) (*Event, error) {
 
 func (s *Session) reconnect() {
 
-	_ = s.Logger.Log(LevelInfo, "called")
+	s.Logger.Debugf("called")
 
 	var err error
 
@@ -286,22 +286,22 @@ func (s *Session) reconnect() {
 		wait := time.Duration(1)
 
 		for {
-			_ = s.Logger.Log(LevelInfo, "trying to reconnect to gateway")
+			s.Logger.Info("trying to reconnect to gateway")
 
 			err = s.Open()
 			if err == nil {
-				_ = s.Logger.Log(LevelInfo, "successfully reconnected to gateway")
+				s.Logger.Info("successfully reconnected to gateway")
 				return
 			}
 
 			// Certain race conditions can call reconnect() twice. If this happens, we
 			// just break out of the reconnect loop
 			if errors.Is(err, ErrWSAlreadyOpen) {
-				_ = s.Logger.Log(LevelInfo, "Websocket already exists, no need to reconnect")
+				s.Logger.Info("Websocket already exists, no need to reconnect")
 				return
 			}
 
-			_ = s.Logger.Log(LevelError, "error reconnecting to gateway, %s", err)
+			s.Logger.Errorf("error reconnecting to gateway, %s", err)
 
 			<-time.After(wait * time.Second)
 			wait *= 2
@@ -321,33 +321,33 @@ func (s *Session) Close() error {
 // listening/heartbeat goroutines.
 func (s *Session) CloseWithCode(closeCode int) (err error) {
 
-	_ = s.Logger.Log(LevelInfo, "called")
+	s.Logger.Debug("called")
 	s.Lock()
 
 	if s.listening != nil {
-		_ = s.Logger.Log(LevelInfo, "closing listening channel")
+		s.Logger.Info("closing listening channel")
 		close(s.listening)
 		s.listening = nil
 	}
 
 	if s.wsConn != nil {
 
-		_ = s.Logger.Log(LevelInfo, "sending close frame")
+		s.Logger.Info("sending close frame")
 		// To cleanly close a connection, a client should send a close
 		// frame and wait for the server to close the connection.
 		s.wsMutex.Lock()
-		err := s.wsConn.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(closeCode, ""))
+		err = s.wsConn.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(closeCode, ""))
 		s.wsMutex.Unlock()
 		if err != nil {
-			_ = s.Logger.Log(LevelInfo, "error closing websocket, %s", err)
+			s.Logger.Warnf("error closing websocket, %s", err)
 		}
 
 		time.Sleep(1 * time.Second)
 
-		_ = s.Logger.Log(LevelInfo, "closing gateway websocket")
+		s.Logger.Infof("closing gateway websocket")
 		err = s.wsConn.Close()
 		if err != nil {
-			_ = s.Logger.Log(LevelInfo, "error closing websocket, %s", err)
+			s.Logger.Warnf("error closing websocket, %s", err)
 		}
 
 		s.wsConn = nil

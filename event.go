@@ -102,7 +102,7 @@ func (s *Session) AddHandler(handler interface{}) func() {
 	eh := handlerForInterface(handler)
 
 	if eh == nil {
-		_ = s.Logger.Log(LevelError, "Invalid handler type, handler will never be called")
+		s.Logger.Errorf("Invalid handler type, handler will never be called")
 		return func() {}
 	}
 
@@ -116,7 +116,7 @@ func (s *Session) AddHandlerOnce(handler interface{}) func() {
 	eh := handlerForInterface(handler)
 
 	if eh == nil {
-		_ = s.Logger.Log(LevelError, "Invalid handler type, handler will never be called")
+		s.Logger.Errorf("Invalid handler type, handler will never be called")
 		return func() {}
 	}
 

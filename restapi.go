@@ -128,8 +128,8 @@ func (s *Session) Request(method string, urlStr func() string, data interface{},
 // RequestBase makes a request
 func (s *Session) RequestBase(method, urlStr, contentType string, b []byte, sequence int, options ...RequestOption) (response []byte, err error) {
 
-	_ = s.Logger.Log(LevelDebug, "API REQUEST %8s :: %s\n", method, urlStr)
-	_ = s.Logger.Log(LevelDebug, "API REQUEST  PAYLOAD :: [%s]\n", string(b))
+	s.Logger.Debugf("API REQUEST %8s :: %s\n", method, urlStr)
+	s.Logger.Debugf("API REQUEST  PAYLOAD :: [%s]\n", string(b))
 
 	req, err := http.NewRequest(method, urlStr, bytes.NewBuffer(b))
 	if err != nil {
@@ -153,7 +153,7 @@ func (s *Session) RequestBase(method, urlStr, contentType string, b []byte, sequ
 	req = cfg.Request
 
 	for k, v := range req.Header {
-		_ = s.Logger.Log(LevelDebug, "API REQUEST   HEADER :: [%s] = %+v\n", k, v)
+		s.Logger.Debugf("API REQUEST   HEADER :: [%s] = %+v\n", k, v)
 	}
 
 	resp, err := cfg.Client.Do(req)
@@ -163,7 +163,7 @@ func (s *Session) RequestBase(method, urlStr, contentType string, b []byte, sequ
 	defer func() {
 		err2 := resp.Body.Close()
 		if err2 != nil {
-			_ = s.Logger.Log(LevelDebug, "error closing resp body")
+			s.Logger.Debugf("error closing resp body")
 		}
 	}()
 
@@ -172,11 +172,11 @@ func (s *Session) RequestBase(method, urlStr, contentType string, b []byte, sequ
 		return
 	}
 
-	_ = s.Logger.Log(LevelDebug, "API RESPONSE  STATUS :: %s\n", resp.Status)
+	s.Logger.Debugf("API RESPONSE  STATUS :: %s\n", resp.Status)
 	for k, v := range resp.Header {
-		_ = s.Logger.Log(LevelDebug, "API RESPONSE  HEADER :: [%s] = %+v\n", k, v)
+		s.Logger.Debugf("API RESPONSE  HEADER :: [%s] = %+v\n", k, v)
 	}
-	_ = s.Logger.Log(LevelDebug, "API RESPONSE    BODY :: [%s]\n\n\n", response)
+	s.Logger.Debugf("API RESPONSE    BODY :: [%s]\n\n\n", response)
 
 	switch resp.StatusCode {
 	case http.StatusOK:
@@ -186,14 +186,14 @@ func (s *Session) RequestBase(method, urlStr, contentType string, b []byte, sequ
 		// Retry sending request if possible
 		if sequence < cfg.MaxRestRetries {
 
-			_ = s.Logger.Log(LevelInfo, "%s Failed (%s), Retrying...", urlStr, resp.Status)
+			s.Logger.Infof("%s Failed (%s), Retrying...", urlStr, resp.Status)
 			response, err = s.RequestBase(method, urlStr, contentType, b, sequence+1, options...)
 		} else {
 			err = fmt.Errorf("exceeded Max retries HTTP %s, %s", resp.Status, response)
 		}
 	case http.StatusUnauthorized:
 		if strings.Index(s.Token, "Bot ") != 0 {
-			_ = s.Logger.Log(LevelInfo, ErrUnauthorized.Error())
+			s.Logger.Warnf(ErrUnauthorized.Error())
 			err = ErrUnauthorized
 		}
 		fallthrough
@@ -221,16 +221,20 @@ func (s *Session) GetLoginInfo() (*LoginInfo, error) {
 	var apiResponse APIResponse
 	var loginInfo LoginInfo
 	if err = unmarshal(request, &apiResponse); err != nil {
-		_ = s.Logger.Log(LevelError, "Failed to unmarshal login info: %v", err)
+		s.Logger.Errorf("Failed to unmarshal login info: %v", err)
 		return nil, err
+	}
+	if apiResponse.RetCode != 0 || apiResponse.Status != "ok" {
+		s.Logger.Errorf("Get login info failed: %s", apiResponse.Message)
+		return nil, fmt.Errorf("get login info failed: %s", apiResponse.Message)
 	}
 	if apiResponse.Data != nil {
 		if err = unmarshal(apiResponse.Data, &loginInfo); err != nil {
-			_ = s.Logger.Log(LevelError, "Failed to unmarshal login info data: %v", err)
+			s.Logger.Errorf("Failed to unmarshal login info data: %v", err)
 			return nil, err
 		}
 	} else {
-		_ = s.Logger.Log(LevelError, "Login info data is nil")
+		s.Logger.Errorf("Login info data is nil")
 		return nil, fmt.Errorf("login info data is nil")
 	}
 	return &loginInfo, nil
@@ -246,17 +250,21 @@ func (s *Session) SendGroupMessage(groupID int64, message *[]IMessageElement) (*
 	}
 	var apiResponse APIResponse
 	if err = unmarshal(request, &apiResponse); err != nil {
-		_ = s.Logger.Log(LevelError, "Failed to unmarshal send group message response: %v", err)
+		s.Logger.Errorf("Failed to unmarshal send group message response: %v", err)
 		return nil, err
+	}
+	if apiResponse.RetCode != 0 || apiResponse.Status != "ok" {
+		s.Logger.Errorf("Send group message failed: %s", apiResponse.Message)
+		return nil, fmt.Errorf("send group message failed: %s", apiResponse.Message)
 	}
 	var messageRet MessageRet
 	if apiResponse.Data != nil {
 		if err = unmarshal(apiResponse.Data, &messageRet); err != nil {
-			_ = s.Logger.Log(LevelError, "Failed to unmarshal message ret data: %v", err)
+			s.Logger.Errorf("Failed to unmarshal message ret data: %v", err)
 			return nil, err
 		}
 	} else {
-		_ = s.Logger.Log(LevelError, "Send group message data is nil")
+		s.Logger.Errorf("Send group message data is nil")
 		return nil, fmt.Errorf("send group message data is nil")
 	}
 	return &messageRet, nil
@@ -272,18 +280,41 @@ func (s *Session) SendPrivateMessage(userID int64, message *[]IMessageElement) (
 	}
 	var apiResponse APIResponse
 	if err = unmarshal(request, &apiResponse); err != nil {
-		_ = s.Logger.Log(LevelError, "Failed to unmarshal send private message response: %v", err)
+		s.Logger.Errorf("Failed to unmarshal send private message response: %v", err)
 		return nil, err
+	}
+	if apiResponse.RetCode != 0 || apiResponse.Status != "ok" {
+		s.Logger.Errorf("Send private message failed: %s", apiResponse.Message)
+		return nil, fmt.Errorf("send private message failed: %s", apiResponse.Message)
 	}
 	var messageRet MessageRet
 	if apiResponse.Data != nil {
 		if err = unmarshal(apiResponse.Data, &messageRet); err != nil {
-			_ = s.Logger.Log(LevelError, "Failed to unmarshal message ret data: %v", err)
+			s.Logger.Errorf("Failed to unmarshal message ret data: %v", err)
 			return nil, err
 		}
 	} else {
-		_ = s.Logger.Log(LevelError, "Send private message data is nil")
+		s.Logger.Errorf("Send private message data is nil")
 		return nil, fmt.Errorf("send private message data is nil")
 	}
 	return &messageRet, nil
+}
+
+func (s *Session) QuitGroup(groupID int64) error {
+	request, err := s.Request("POST", EndpointQuitGroup, map[string]interface{}{
+		"group_id": groupID,
+	}, WithHeader("Content-Type", "application/json"))
+	if err != nil {
+		return err
+	}
+	var apiResponse APIResponse
+	if err = unmarshal(request, &apiResponse); err != nil {
+		s.Logger.Errorf("Failed to unmarshal quit group response: %v", err)
+		return err
+	}
+	if apiResponse.RetCode != 0 || apiResponse.Status != "ok" {
+		s.Logger.Errorf("Quit group failed: %s", apiResponse.Message)
+		return fmt.Errorf("quit group failed: %s", apiResponse.Message)
+	}
+	return nil
 }
