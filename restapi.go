@@ -107,12 +107,8 @@ func WithContext(ctx context.Context) RequestOption {
 	}
 }
 
-func (s *Session) beforeRequest() {
-	SetGateway(s.RestGateway)
-}
-
 // Request makes a (GET/POST/...) Requests to REST API with JSON data.
-func (s *Session) Request(method string, urlStr func() string, data interface{}, options ...RequestOption) (response []byte, err error) {
+func (s *Session) Request(method string, pathStr string, data interface{}, options ...RequestOption) (response []byte, err error) {
 	var body []byte
 	if data != nil {
 		body, err = Marshal(data)
@@ -120,8 +116,7 @@ func (s *Session) Request(method string, urlStr func() string, data interface{},
 			return
 		}
 	}
-	s.beforeRequest()
-	return s.RequestBase(method, urlStr(), "application/json", body, 0, options...)
+	return s.RequestBase(method, s.apiEndpoints.Endpoint(pathStr), "application/json", body, 0, options...)
 }
 
 // RequestBase makes a request

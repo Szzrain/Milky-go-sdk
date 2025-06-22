@@ -21,6 +21,7 @@ func New(wsGateway string, restGateway string, token string, logger Logger) (s *
 		RestGateway:            restGateway,
 		Logger:                 logger,
 		Token:                  token,
+		apiEndpoints:           newAPIEndpoints(restGateway),
 	}
 
 	return

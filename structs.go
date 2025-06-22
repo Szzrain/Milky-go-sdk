@@ -16,6 +16,8 @@ type Session struct {
 	// stores sessions current rest gateway
 	RestGateway string
 
+	apiEndpoints *apiEndpoints
+
 	LogLevel int
 
 	// Should the session reconnect the websocket on errors.
