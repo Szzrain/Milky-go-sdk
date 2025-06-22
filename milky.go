@@ -6,9 +6,9 @@ import (
 	"time"
 )
 
-const version = "0.1.0"
+const version = "0.3.0"
 
-func New(wsGateway string, restGateway string, logger Logger) (s *Session, err error) {
+func New(wsGateway string, restGateway string, token string, logger Logger) (s *Session, err error) {
 	// Create an empty Session interface.
 	s = &Session{
 		ShouldReconnectOnError: true,
@@ -20,6 +20,7 @@ func New(wsGateway string, restGateway string, logger Logger) (s *Session, err e
 		WSGateway:              wsGateway,
 		RestGateway:            restGateway,
 		Logger:                 logger,
+		Token:                  token,
 	}
 
 	return

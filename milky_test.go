@@ -6,6 +6,13 @@ import (
 	"testing"
 )
 
+// Test Environment Variables List:
+// TEST_WS_GATEWAY: WebSocket gateway URL for MilkyGo SDK.
+// TEST_REST_GATEWAY: REST API gateway URL for MilkyGo SDK.
+// TEST_ACCESS_TOKEN: Access token for authentication with MilkyGo SDK (optional).
+// TEST_TARGET_USER_ID: User ID to send private messages to (optional).
+// TEST_TARGET_GROUP_ID: Group ID to send group messages to (optional).
+
 type TestLogger struct {
 }
 
@@ -44,7 +51,7 @@ func (l *TestLogger) Warn(args ...interface{}) {
 func TestMilky(m *testing.T) {
 	logger := &TestLogger{}
 	fmt.Println("Gateway WS:", os.Getenv("TEST_WS_GATEWAY"))
-	session, err := New(os.Getenv("TEST_WS_GATEWAY"), os.Getenv("TEST_REST_GATEWAY"), logger)
+	session, err := New(os.Getenv("TEST_WS_GATEWAY"), os.Getenv("TEST_REST_GATEWAY"), os.Getenv("TEST_ACCESS_TOKEN"), logger)
 	if err != nil {
 		m.Fatalf("Failed to create session: %v", err)
 	}
@@ -70,7 +77,6 @@ func TestMilky(m *testing.T) {
 			return
 		}
 		fmt.Printf("Received friend request: UserId %d, Comment %s, State: %s\n", m.InitiatorID, m.Comment, m.State)
-
 	})
 	err = session.Open()
 	if err != nil {

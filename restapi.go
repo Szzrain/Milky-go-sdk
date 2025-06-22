@@ -137,7 +137,7 @@ func (s *Session) RequestBase(method, urlStr, contentType string, b []byte, sequ
 	}
 
 	if s.Token != "" {
-		req.Header.Set("authorization", s.Token)
+		req.Header.Set("Authorization", "Bearer "+s.Token)
 	}
 
 	if b != nil {

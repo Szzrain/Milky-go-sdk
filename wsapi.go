@@ -59,7 +59,11 @@ func (s *Session) Open() error {
 	// Connect to the WSGateway
 	s.Logger.Debugf("connecting to gateway %s", s.WSGateway)
 	header := http.Header{}
-	s.wsConn, _, err = s.Dialer.Dial(s.WSGateway, header)
+	addr := s.WSGateway
+	if s.Token != "" {
+		addr = s.WSGateway + "?access_token=" + s.Token
+	}
+	s.wsConn, _, err = s.Dialer.Dial(addr, header)
 	if err != nil {
 		s.Logger.Errorf("error connecting to gateway %s, %s", s.WSGateway, err)
 		s.wsConn = nil // Just to be safe.
