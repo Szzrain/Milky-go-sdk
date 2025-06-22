@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"strings"
 )
 
 var (
@@ -192,10 +191,8 @@ func (s *Session) RequestBase(method, urlStr, contentType string, b []byte, sequ
 			err = fmt.Errorf("exceeded Max retries HTTP %s, %s", resp.Status, response)
 		}
 	case http.StatusUnauthorized:
-		if strings.Index(s.Token, "Bot ") != 0 {
-			s.Logger.Warnf(ErrUnauthorized.Error())
-			err = ErrUnauthorized
-		}
+		s.Logger.Warnf(ErrUnauthorized.Error())
+		err = ErrUnauthorized
 		fallthrough
 	default: // Error condition
 		err = newRestError(req, resp, response)
