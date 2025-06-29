@@ -93,6 +93,23 @@ func TestMilky(m *testing.T) {
 		m.Fatalf("Failed to get login info: %v", err)
 	}
 	logger.Infof("Login info: UserId %d, Nickname %s", info.UIN, info.Nickname)
+	//forward := OutGoingForwardMessage{
+	//	UserID: info.UIN,
+	//	Name:   info.Nickname,
+	//	Segments: []IMessageElement{
+	//		&TextElement{Text: "This is a message sent by MilkyGo SDK."},
+	//	},
+	//}
+	//forward2 := OutGoingForwardMessage{
+	//	UserID: info.UIN,
+	//	Name:   info.Nickname,
+	//	Segments: []IMessageElement{
+	//		&TextElement{Text: "This is a second message in the same forward."},
+	//	},
+	//}
+	//element := &ForwardElement{
+	//	Messages: []OutGoingForwardMessage{forward, forward2},
+	//}
 	text := TextElement{
 		Text: "Hello, this is a test message from MilkyGo SDK!",
 	}
@@ -118,7 +135,6 @@ func TestMilky(m *testing.T) {
 	//if err != nil {
 	//	m.Fatalf("Failed to send private message: %v", err)
 	//}
-	//_ = logger.Log(LevelInfo, "Sent message: MessageId %d, Time %d", message.MessageSeq, message.Time)
 	//targetGroupID := os.Getenv("TEST_TARGET_GROUP_ID")
 	//targetGroupIDInt, err := strconv.ParseInt(targetGroupID, 10, 64)
 	//if err != nil {
@@ -128,6 +144,6 @@ func TestMilky(m *testing.T) {
 	//if err != nil {
 	//	m.Fatalf("Failed to send group message: %v", err)
 	//}
-	//_ = logger.Log(LevelInfo, "Sent message: MessageId %d, Time %d", message.MessageSeq, message.Time)
+	//logger.Infof("Sent group message: MessageId %d, Time %d", message.MessageSeq, message.Time)
 	select {}
 }

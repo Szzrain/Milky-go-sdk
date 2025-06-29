@@ -613,6 +613,26 @@ func (s *Session) QuitGroup(groupID int64) error {
 	return nil
 }
 
+func (s *Session) SendGroupNudge(groupID int64, userID string) error {
+	request, err := s.Request("POST", EndpointSendGroupNudge, map[string]interface{}{
+		"group_id": groupID,
+		"user_id":  userID,
+	}, WithHeader("Content-Type", "application/json"))
+	if err != nil {
+		return err
+	}
+	var apiResponse APIResponse
+	if err = unmarshal(request, &apiResponse); err != nil {
+		s.Logger.Errorf("Failed to unmarshal send group nudge response: %v", err)
+		return err
+	}
+	if apiResponse.RetCode != 0 || apiResponse.Status != "ok" {
+		s.Logger.Errorf("Send group nudge failed: %s", apiResponse.Message)
+		return fmt.Errorf("send group nudge failed: %s", apiResponse.Message)
+	}
+	return nil
+}
+
 func (s *Session) UploadGroupFile(groupID int64, fileURI string, fileName string, parentFolderID string) (string, error) {
 	request, err := s.Request("POST", EndpointUploadGroupFile, map[string]interface{}{
 		"group_id":         groupID,
