@@ -259,7 +259,7 @@ func (s *Session) GetImplInfo() (*ImplInfo, error) {
 	return &implInfo, nil
 }
 
-func (s *Session) GetFriendList(noCache bool) (*[]Friend, error) {
+func (s *Session) GetFriendList(noCache bool) ([]Friend, error) {
 	request, err := s.Request("POST", EndpointGetFriendList, map[string]interface{}{
 		"no_cache": noCache,
 	}, WithHeader("Content-Type", "application/json"))
@@ -267,7 +267,9 @@ func (s *Session) GetFriendList(noCache bool) (*[]Friend, error) {
 		return nil, err
 	}
 	var apiResponse APIResponse
-	var friendList []Friend
+	var friendList struct {
+		Friends []Friend `json:"friends"`
+	}
 	if err = unmarshal(request, &apiResponse); err != nil {
 		s.Logger.Errorf("Failed to unmarshal friend list: %v", err)
 		return nil, err
@@ -285,7 +287,7 @@ func (s *Session) GetFriendList(noCache bool) (*[]Friend, error) {
 		s.Logger.Errorf("Friend list data is nil")
 		return nil, fmt.Errorf("friend list data is nil")
 	}
-	return &friendList, nil
+	return friendList.Friends, nil
 }
 
 func (s *Session) GetFriendInfo(userID int64, noCache bool) (*Friend, error) {
@@ -297,7 +299,9 @@ func (s *Session) GetFriendInfo(userID int64, noCache bool) (*Friend, error) {
 		return nil, err
 	}
 	var apiResponse APIResponse
-	var friendInfo Friend
+	var friendInfo struct {
+		Friend Friend `json:"friend"`
+	}
 	if err = unmarshal(request, &apiResponse); err != nil {
 		s.Logger.Errorf("Failed to unmarshal friend info: %v", err)
 		return nil, err
@@ -315,10 +319,10 @@ func (s *Session) GetFriendInfo(userID int64, noCache bool) (*Friend, error) {
 		s.Logger.Errorf("Friend info data is nil")
 		return nil, fmt.Errorf("friend info data is nil")
 	}
-	return &friendInfo, nil
+	return &friendInfo.Friend, nil
 }
 
-func (s *Session) GetGroupList(noCache bool) (*[]GroupInfo, error) {
+func (s *Session) GetGroupList(noCache bool) ([]GroupInfo, error) {
 	request, err := s.Request("POST", EndpointGetGroupList, map[string]interface{}{
 		"no_cache": noCache,
 	}, WithHeader("Content-Type", "application/json"))
@@ -326,7 +330,9 @@ func (s *Session) GetGroupList(noCache bool) (*[]GroupInfo, error) {
 		return nil, err
 	}
 	var apiResponse APIResponse
-	var groupList []GroupInfo
+	var groupList struct {
+		Groups []GroupInfo `json:"groups"`
+	}
 	if err = unmarshal(request, &apiResponse); err != nil {
 		s.Logger.Errorf("Failed to unmarshal group list: %v", err)
 		return nil, err
@@ -344,7 +350,7 @@ func (s *Session) GetGroupList(noCache bool) (*[]GroupInfo, error) {
 		s.Logger.Errorf("Group list data is nil")
 		return nil, fmt.Errorf("group list data is nil")
 	}
-	return &groupList, nil
+	return groupList.Groups, nil
 }
 
 func (s *Session) GetGroupInfo(groupID int64, noCache bool) (*GroupInfo, error) {
@@ -356,7 +362,9 @@ func (s *Session) GetGroupInfo(groupID int64, noCache bool) (*GroupInfo, error) 
 		return nil, err
 	}
 	var apiResponse APIResponse
-	var groupInfo GroupInfo
+	var groupInfo struct {
+		Group GroupInfo `json:"group"`
+	}
 	if err = unmarshal(request, &apiResponse); err != nil {
 		s.Logger.Errorf("Failed to unmarshal group info: %v", err)
 		return nil, err
@@ -374,10 +382,10 @@ func (s *Session) GetGroupInfo(groupID int64, noCache bool) (*GroupInfo, error) 
 		s.Logger.Errorf("Group info data is nil")
 		return nil, fmt.Errorf("group info data is nil")
 	}
-	return &groupInfo, nil
+	return &groupInfo.Group, nil
 }
 
-func (s *Session) GetGroupMemberList(groupID int64, noCache bool) (*[]GroupMemberInfo, error) {
+func (s *Session) GetGroupMemberList(groupID int64, noCache bool) ([]GroupMemberInfo, error) {
 	request, err := s.Request("POST", EndpointGetGroupMemberList, map[string]interface{}{
 		"group_id": groupID,
 		"no_cache": noCache,
@@ -386,7 +394,9 @@ func (s *Session) GetGroupMemberList(groupID int64, noCache bool) (*[]GroupMembe
 		return nil, err
 	}
 	var apiResponse APIResponse
-	var memberList []GroupMemberInfo
+	var memberList struct {
+		Members []GroupMemberInfo `json:"members"`
+	}
 	if err = unmarshal(request, &apiResponse); err != nil {
 		s.Logger.Errorf("Failed to unmarshal group member list: %v", err)
 		return nil, err
@@ -404,7 +414,7 @@ func (s *Session) GetGroupMemberList(groupID int64, noCache bool) (*[]GroupMembe
 		s.Logger.Errorf("Group member list data is nil")
 		return nil, fmt.Errorf("group member list data is nil")
 	}
-	return &memberList, nil
+	return memberList.Members, nil
 }
 
 func (s *Session) GetGroupMemberInfo(groupID, userID int64, noCache bool) (*GroupMemberInfo, error) {
@@ -417,7 +427,9 @@ func (s *Session) GetGroupMemberInfo(groupID, userID int64, noCache bool) (*Grou
 		return nil, err
 	}
 	var apiResponse APIResponse
-	var memberInfo GroupMemberInfo
+	var memberInfo struct {
+		Member GroupMemberInfo `json:"member"`
+	}
 	if err = unmarshal(request, &apiResponse); err != nil {
 		s.Logger.Errorf("Failed to unmarshal group member info: %v", err)
 		return nil, err
@@ -435,7 +447,7 @@ func (s *Session) GetGroupMemberInfo(groupID, userID int64, noCache bool) (*Grou
 		s.Logger.Errorf("Group member info data is nil")
 		return nil, fmt.Errorf("group member info data is nil")
 	}
-	return &memberInfo, nil
+	return &memberInfo.Member, nil
 }
 
 func (s *Session) SendGroupMessage(groupID int64, message *[]IMessageElement) (*MessageRet, error) {

@@ -98,6 +98,16 @@ func TestMilky(m *testing.T) {
 	}
 	var elements []IMessageElement
 	elements = append(elements, &text)
+	friendList, err := session.GetFriendList(true)
+	if err != nil {
+		m.Fatalf("Failed to get friend list: %v", err)
+	}
+	logger.Infof("Friend list: %v", friendList)
+	groupList, err := session.GetGroupList(true)
+	if err != nil {
+		m.Fatalf("Failed to get group list: %v", err)
+	}
+	logger.Infof("Group list: %v", groupList)
 	//// get from env
 	//targetUserID := os.Getenv("TEST_TARGET_USER_ID")
 	//targetUserIDInt, err := strconv.ParseInt(targetUserID, 10, 64)
