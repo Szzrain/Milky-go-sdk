@@ -698,3 +698,23 @@ func (s *Session) GetGroupFileDownloadURL(groupID int64, fileID string) (string,
 	}
 	return downloadURLResponse.DownloadURL, nil
 }
+
+func (s *Session) DeleteGroupFile(groupID int64, fileID string) error {
+	request, err := s.Request("POST", EndpointDeleteGroupFile, map[string]interface{}{
+		"group_id": groupID,
+		"file_id":  fileID,
+	}, WithHeader("Content-Type", "application/json"))
+	if err != nil {
+		return err
+	}
+	var apiResponse APIResponse
+	if err = unmarshal(request, &apiResponse); err != nil {
+		s.Logger.Errorf("Failed to unmarshal delete group file response: %v", err)
+		return err
+	}
+	if apiResponse.RetCode != 0 || apiResponse.Status != "ok" {
+		s.Logger.Errorf("Delete group file failed: %s", apiResponse.Message)
+		return fmt.Errorf("delete group file failed: %s", apiResponse.Message)
+	}
+	return nil
+}
