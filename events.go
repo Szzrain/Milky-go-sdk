@@ -114,6 +114,12 @@ func (r *ReceiveMessage) UnmarshalJSON(data []byte) error {
 					return err
 				}
 				r.Segments = append(r.Segments, &replyElement)
+			case string(Forward):
+				var forwardElement ForwardElement
+				if err := json.Unmarshal(element.Data, &forwardElement); err != nil {
+					return err
+				}
+				r.Segments = append(r.Segments, &forwardElement)
 			default:
 				continue // Ignore unknown types.
 			}

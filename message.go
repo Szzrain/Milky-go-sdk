@@ -18,14 +18,15 @@ type (
 
 // Copied from sealdice/sealdice-core
 const (
-	Text   ElementType = "text"        // 文本
-	At     ElementType = "mention"     // 艾特
-	AtAll  ElementType = "mention_all" // 艾特全体
-	Video  ElementType = "video"       // 视频
-	Image  ElementType = "image"       // 图片
-	Reply  ElementType = "reply"       // 回复
-	Record ElementType = "record"      // 语音
-	Face   ElementType = "face"        // 表情
+	Text    ElementType = "text"        // 文本
+	At      ElementType = "mention"     // 艾特
+	AtAll   ElementType = "mention_all" // 艾特全体
+	Video   ElementType = "video"       // 视频
+	Image   ElementType = "image"       // 图片
+	Reply   ElementType = "reply"       // 回复
+	Record  ElementType = "record"      // 语音
+	Face    ElementType = "face"        // 表情
+	Forward ElementType = "forward"     // 转发
 )
 
 type APIResponse struct {
@@ -38,6 +39,14 @@ type APIResponse struct {
 type LoginInfo struct {
 	UIN      int64  `json:"uin"`
 	Nickname string `json:"nickname"`
+}
+
+type ImplInfo struct {
+	ImplName          string `json:"impl_name"`    // 实现名称
+	ImplVersion       string `json:"impl_version"` // 实现版本
+	QQProtocolVersion string `json:"qq_protocol_version"`
+	QQProtocolType    string `json:"qq_protocol_type"`
+	MilkyVersion      string `json:"milky_version"` // Milky 协议版本
 }
 
 type FriendCategory struct {
@@ -313,6 +322,37 @@ func (f *FaceElement) MarshalJSON() ([]byte, error) {
 			FaceID string `json:"face_id"`
 		}{
 			FaceID: f.FaceID,
+		},
+	})
+}
+
+type OutGoingForwardMessage struct {
+	UserID   int64             `json:"user_id"`
+	Name     string            `json:"name"`     // 转发者名称
+	Segments []IMessageElement `json:"segments"` // 转发的消息内容
+}
+
+type ForwardElement struct {
+	ForwardID string                   `json:"forward_id"` // 转发消息ID
+	Messages  []OutGoingForwardMessage `json:"messages"`
+}
+
+func (f *ForwardElement) Type() ElementType {
+	return Forward
+}
+
+func (f *ForwardElement) MarshalJSON() ([]byte, error) {
+	return json.Marshal(&struct {
+		Type ElementType `json:"type"`
+		Data struct {
+			Messages []OutGoingForwardMessage `json:"messages"`
+		} `json:"data"`
+	}{
+		Type: f.Type(),
+		Data: struct {
+			Messages []OutGoingForwardMessage `json:"messages"`
+		}{
+			Messages: f.Messages,
 		},
 	})
 }

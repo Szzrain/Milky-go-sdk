@@ -18,6 +18,7 @@ func (e *apiEndpoints) Endpoint(path string) string {
 
 const (
 	EndpointGetLoginInfo               = "get_login_info"
+	EndpointGetImplInfo                = "get_impl_info"
 	EndpointGetFriendList              = "get_friend_list"
 	EndpointGetFriendInfo              = "get_friend_info"
 	EndpointGetGroupList               = "get_group_list"
@@ -27,7 +28,7 @@ const (
 	EndpointSendPrivateMessage         = "send_private_message"
 	EndpointSendGroupMessage           = "send_group_message"
 	EndpointGetMessage                 = "get_message"
-	EndpointGetHistoryMessage          = "get_history_message"
+	EndpointGetHistoryMessages         = "get_history_messages"
 	EndpointGetResourceTempURL         = "get_resource_temp_url"
 	EndpointGetForwardedMessages       = "get_forwarded_messages"
 	EndpointRecallPrivateMessage       = "recall_private_message"
