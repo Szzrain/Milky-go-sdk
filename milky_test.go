@@ -78,6 +78,12 @@ func TestMilky(m *testing.T) {
 		}
 		fmt.Printf("Received friend request: UserId %d, Comment %s, State: %s\n", m.InitiatorID, m.Comment, m.State)
 	})
+	session.AddHandler(func(session2 *Session, m *BotOffline) {
+		if m == nil {
+			return
+		}
+		fmt.Printf("Bot offline: Reason %s\n", m.Reason)
+	})
 	err = session.Open()
 	if err != nil {
 		m.Fatalf("Failed to open session: %v", err)

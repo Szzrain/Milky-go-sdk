@@ -138,6 +138,10 @@ type GroupInvitation struct {
 	GroupID     int64  `json:"group_id"`
 }
 
+type BotOffline struct {
+	Reason string `json:"reason"` // 原因
+}
+
 const maxFileSize = 1024 * 1024 * 50 // 50MB
 
 type TextElement struct {

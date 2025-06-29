@@ -6,6 +6,7 @@ package Milky_go_sdk
 const (
 	messageReceiveEventType = "message_receive"
 	friendRequestEventType  = "friend_request"
+	botOfflineEventType     = "bot_offline"
 )
 
 func handlerForInterface(handler interface{}) EventHandler {
@@ -16,6 +17,8 @@ func handlerForInterface(handler interface{}) EventHandler {
 		return messageReceiveEventHandler(v)
 	case func(*Session, *FriendRequest):
 		return friendRequestEventHandler(v)
+	case func(*Session, *BotOffline):
+		return botOfflineEventHandler(v)
 	}
 
 	return nil
@@ -60,7 +63,24 @@ func (eh friendRequestEventHandler) Handle(s *Session, i interface{}) {
 	}
 }
 
+type botOfflineEventHandler func(*Session, *BotOffline)
+
+func (eh botOfflineEventHandler) Handle(session *Session, i interface{}) {
+	if t, ok := i.(*BotOffline); ok {
+		eh(session, t)
+	}
+}
+
+func (eh botOfflineEventHandler) Type() string {
+	return botOfflineEventType
+}
+
+func (eh botOfflineEventHandler) New() interface{} {
+	return &BotOffline{}
+}
+
 func init() {
 	registerInterfaceProvider(messageReceiveEventHandler(nil))
 	registerInterfaceProvider(friendRequestEventHandler(nil))
+	registerInterfaceProvider(botOfflineEventHandler(nil))
 }
