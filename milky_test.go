@@ -140,6 +140,12 @@ func TestMilky(m *testing.T) {
 	//if err != nil {
 	//	m.Fatalf("Invalid TEST_TARGET_GROUP_ID: %v", err)
 	//}
+	//file, err := session.UploadGroupFile(targetGroupIDInt, os.Getenv("TEST_SEND_FILE_URI"), "file.txt", "")
+	//if err != nil {
+	//	m.Fatalf("Failed to upload group file: %v", err)
+	//	return
+	//}
+	//logger.Infof("Uploaded file: %s", file)
 	//message, err := session.SendGroupMessage(targetGroupIDInt, &elements)
 	//if err != nil {
 	//	m.Fatalf("Failed to send group message: %v", err)

@@ -633,6 +633,151 @@ func (s *Session) SendGroupNudge(groupID int64, userID string) error {
 	return nil
 }
 
+func (s *Session) SetGroupName(groupID int64, name string) error {
+	request, err := s.Request("POST", EndpointSetGroupName, map[string]interface{}{
+		"group_id": groupID,
+		"name":     name,
+	}, WithHeader("Content-Type", "application/json"))
+	if err != nil {
+		return err
+	}
+	var apiResponse APIResponse
+	if err = unmarshal(request, &apiResponse); err != nil {
+		s.Logger.Errorf("Failed to unmarshal set group name response: %v", err)
+		return err
+	}
+	if apiResponse.RetCode != 0 || apiResponse.Status != "ok" {
+		s.Logger.Errorf("Set group name failed: %s", apiResponse.Message)
+		return fmt.Errorf("set group name failed: %s", apiResponse.Message)
+	}
+	return nil
+}
+
+func (s *Session) SetGroupMemberCard(groupID int64, userID int64, card string) error {
+	request, err := s.Request("POST", EndpointSetGroupMemberCard, map[string]interface{}{
+		"group_id": groupID,
+		"user_id":  userID,
+		"card":     card,
+	}, WithHeader("Content-Type", "application/json"))
+	if err != nil {
+		return err
+	}
+	var apiResponse APIResponse
+	if err = unmarshal(request, &apiResponse); err != nil {
+		s.Logger.Errorf("Failed to unmarshal set group member card response: %v", err)
+		return err
+	}
+	if apiResponse.RetCode != 0 || apiResponse.Status != "ok" {
+		s.Logger.Errorf("Set group member card failed: %s", apiResponse.Message)
+		return fmt.Errorf("set group member card failed: %s", apiResponse.Message)
+	}
+	return nil
+}
+
+func (s *Session) SetGroupMemberSpecialTitle(groupID int64, userID int64, specialTitle string) error {
+	request, err := s.Request("POST", EndpointSetGroupMemberSpecialTitle, map[string]interface{}{
+		"group_id":      groupID,
+		"user_id":       userID,
+		"special_title": specialTitle,
+	}, WithHeader("Content-Type", "application/json"))
+	if err != nil {
+		return err
+	}
+	var apiResponse APIResponse
+	if err = unmarshal(request, &apiResponse); err != nil {
+		s.Logger.Errorf("Failed to unmarshal set group member special title response: %v", err)
+		return err
+	}
+	if apiResponse.RetCode != 0 || apiResponse.Status != "ok" {
+		s.Logger.Errorf("Set group member special title failed: %s", apiResponse.Message)
+		return fmt.Errorf("set group member special title failed: %s", apiResponse.Message)
+	}
+	return nil
+}
+
+func (s *Session) SetGroupAdmin(groupID int64, userID int64, isSet bool) error {
+	request, err := s.Request("POST", EndpointSetGroupAdmin, map[string]interface{}{
+		"group_id": groupID,
+		"user_id":  userID,
+		"is_admin": isSet,
+	}, WithHeader("Content-Type", "application/json"))
+	if err != nil {
+		return err
+	}
+	var apiResponse APIResponse
+	if err = unmarshal(request, &apiResponse); err != nil {
+		s.Logger.Errorf("Failed to unmarshal set group admin response: %v", err)
+		return err
+	}
+	if apiResponse.RetCode != 0 || apiResponse.Status != "ok" {
+		s.Logger.Errorf("Set group admin failed: %s", apiResponse.Message)
+		return fmt.Errorf("set group admin failed: %s", apiResponse.Message)
+	}
+	return nil
+}
+
+func (s *Session) SetGroupMemberMute(groupID int64, userID int64, duration int64) error {
+	request, err := s.Request("POST", EndpointSetGroupMemberMute, map[string]interface{}{
+		"group_id": groupID,
+		"user_id":  userID,
+		"duration": duration,
+	}, WithHeader("Content-Type", "application/json"))
+	if err != nil {
+		return err
+	}
+	var apiResponse APIResponse
+	if err = unmarshal(request, &apiResponse); err != nil {
+		s.Logger.Errorf("Failed to unmarshal set group member mute response: %v", err)
+		return err
+	}
+	if apiResponse.RetCode != 0 || apiResponse.Status != "ok" {
+		s.Logger.Errorf("Set group member mute failed: %s", apiResponse.Message)
+		return fmt.Errorf("set group member mute failed: %s", apiResponse.Message)
+	}
+	return nil
+}
+
+func (s *Session) SetGroupWholeMute(groupID int64, isMute bool) error {
+	request, err := s.Request("POST", EndpointSetGroupWholeMute, map[string]interface{}{
+		"group_id": groupID,
+		"is_mute":  isMute,
+	}, WithHeader("Content-Type", "application/json"))
+	if err != nil {
+		return err
+	}
+	var apiResponse APIResponse
+	if err = unmarshal(request, &apiResponse); err != nil {
+		s.Logger.Errorf("Failed to unmarshal set group whole mute response: %v", err)
+		return err
+	}
+	if apiResponse.RetCode != 0 || apiResponse.Status != "ok" {
+		s.Logger.Errorf("Set group whole mute failed: %s", apiResponse.Message)
+		return fmt.Errorf("set group whole mute failed: %s", apiResponse.Message)
+	}
+	return nil
+}
+
+func (s *Session) KickGroupMember(groupID int64, userID int64, rejectAddRequest bool) error {
+	request, err := s.Request("POST", EndpointKickGroupMember, map[string]interface{}{
+		"group_id":           groupID,
+		"user_id":            userID,
+		"reject_add_request": rejectAddRequest,
+	}, WithHeader("Content-Type", "application/json"))
+	if err != nil {
+		return err
+	}
+	var apiResponse APIResponse
+	if err = unmarshal(request, &apiResponse); err != nil {
+		s.Logger.Errorf("Failed to unmarshal kick group member response: %v", err)
+		return err
+	}
+	if apiResponse.RetCode != 0 || apiResponse.Status != "ok" {
+		s.Logger.Errorf("Kick group member failed: %s", apiResponse.Message)
+		return fmt.Errorf("kick group member failed: %s", apiResponse.Message)
+	}
+	return nil
+}
+
 func (s *Session) UploadGroupFile(groupID int64, fileURI string, fileName string, parentFolderID string) (string, error) {
 	request, err := s.Request("POST", EndpointUploadGroupFile, map[string]interface{}{
 		"group_id":         groupID,
