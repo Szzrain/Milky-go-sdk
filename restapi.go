@@ -205,56 +205,43 @@ func unmarshal(data []byte, v interface{}) error {
 	return nil
 }
 
+func handleAPIResponse(request []byte, apiResponse *APIResponse, data interface{}) error {
+	if err := unmarshal(request, apiResponse); err != nil {
+		return err
+	}
+	if apiResponse.RetCode != 0 || apiResponse.Status != "ok" {
+		return fmt.Errorf("API call failed: %s", apiResponse.Message)
+	}
+	if apiResponse.Data != nil {
+		return unmarshal(apiResponse.Data, data)
+	} else if data != nil {
+		return fmt.Errorf("API call returned no data")
+	}
+	return nil
+}
+
 func (s *Session) GetLoginInfo() (*LoginInfo, error) {
-	request, err := s.Request("POST", EndpointGetLoginInfo, "{}", WithHeader("Content-Type", "application/json"))
+	var apiResponse APIResponse
+	var loginInfo LoginInfo
+	request, err := s.Request("POST", EndpointGetLoginInfo, "{}")
 	if err != nil {
 		return nil, err
 	}
-	var apiResponse APIResponse
-	var loginInfo LoginInfo
-	if err = unmarshal(request, &apiResponse); err != nil {
-		s.Logger.Errorf("Failed to unmarshal login info: %v", err)
+	if err = handleAPIResponse(request, &apiResponse, &loginInfo); err != nil {
 		return nil, err
-	}
-	if apiResponse.RetCode != 0 || apiResponse.Status != "ok" {
-		s.Logger.Errorf("Get login info failed: %s", apiResponse.Message)
-		return nil, fmt.Errorf("get login info failed: %s", apiResponse.Message)
-	}
-	if apiResponse.Data != nil {
-		if err = unmarshal(apiResponse.Data, &loginInfo); err != nil {
-			s.Logger.Errorf("Failed to unmarshal login info data: %v", err)
-			return nil, err
-		}
-	} else {
-		s.Logger.Errorf("Login info data is nil")
-		return nil, fmt.Errorf("login info data is nil")
 	}
 	return &loginInfo, nil
 }
 
 func (s *Session) GetImplInfo() (*ImplInfo, error) {
-	request, err := s.Request("POST", EndpointGetImplInfo, "{}", WithHeader("Content-Type", "application/json"))
+	request, err := s.Request("POST", EndpointGetImplInfo, "{}")
 	if err != nil {
 		return nil, err
 	}
 	var apiResponse APIResponse
 	var implInfo ImplInfo
-	if err = unmarshal(request, &apiResponse); err != nil {
-		s.Logger.Errorf("Failed to unmarshal impl info: %v", err)
+	if err = handleAPIResponse(request, &apiResponse, &implInfo); err != nil {
 		return nil, err
-	}
-	if apiResponse.RetCode != 0 || apiResponse.Status != "ok" {
-		s.Logger.Errorf("Get impl info failed: %s", apiResponse.Message)
-		return nil, fmt.Errorf("get impl info failed: %s", apiResponse.Message)
-	}
-	if apiResponse.Data != nil {
-		if err = unmarshal(apiResponse.Data, &implInfo); err != nil {
-			s.Logger.Errorf("Failed to unmarshal impl info data: %v", err)
-			return nil, err
-		}
-	} else {
-		s.Logger.Errorf("Impl info data is nil")
-		return nil, fmt.Errorf("impl info data is nil")
 	}
 	return &implInfo, nil
 }
@@ -262,7 +249,7 @@ func (s *Session) GetImplInfo() (*ImplInfo, error) {
 func (s *Session) GetFriendList(noCache bool) ([]Friend, error) {
 	request, err := s.Request("POST", EndpointGetFriendList, map[string]interface{}{
 		"no_cache": noCache,
-	}, WithHeader("Content-Type", "application/json"))
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -270,22 +257,8 @@ func (s *Session) GetFriendList(noCache bool) ([]Friend, error) {
 	var friendList struct {
 		Friends []Friend `json:"friends"`
 	}
-	if err = unmarshal(request, &apiResponse); err != nil {
-		s.Logger.Errorf("Failed to unmarshal friend list: %v", err)
+	if err = handleAPIResponse(request, &apiResponse, &friendList); err != nil {
 		return nil, err
-	}
-	if apiResponse.RetCode != 0 || apiResponse.Status != "ok" {
-		s.Logger.Errorf("Get friend list failed: %s", apiResponse.Message)
-		return nil, fmt.Errorf("get friend list failed: %s", apiResponse.Message)
-	}
-	if apiResponse.Data != nil {
-		if err = unmarshal(apiResponse.Data, &friendList); err != nil {
-			s.Logger.Errorf("Failed to unmarshal friend list data: %v", err)
-			return nil, err
-		}
-	} else {
-		s.Logger.Errorf("Friend list data is nil")
-		return nil, fmt.Errorf("friend list data is nil")
 	}
 	return friendList.Friends, nil
 }
@@ -294,7 +267,7 @@ func (s *Session) GetFriendInfo(userID int64, noCache bool) (*Friend, error) {
 	request, err := s.Request("POST", EndpointGetFriendInfo, map[string]interface{}{
 		"user_id":  userID,
 		"no_cache": noCache,
-	}, WithHeader("Content-Type", "application/json"))
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -302,22 +275,8 @@ func (s *Session) GetFriendInfo(userID int64, noCache bool) (*Friend, error) {
 	var friendInfo struct {
 		Friend Friend `json:"friend"`
 	}
-	if err = unmarshal(request, &apiResponse); err != nil {
-		s.Logger.Errorf("Failed to unmarshal friend info: %v", err)
+	if err = handleAPIResponse(request, &apiResponse, &friendInfo); err != nil {
 		return nil, err
-	}
-	if apiResponse.RetCode != 0 || apiResponse.Status != "ok" {
-		s.Logger.Errorf("Get friend info failed: %s", apiResponse.Message)
-		return nil, fmt.Errorf("get friend info failed: %s", apiResponse.Message)
-	}
-	if apiResponse.Data != nil {
-		if err = unmarshal(apiResponse.Data, &friendInfo); err != nil {
-			s.Logger.Errorf("Failed to unmarshal friend info data: %v", err)
-			return nil, err
-		}
-	} else {
-		s.Logger.Errorf("Friend info data is nil")
-		return nil, fmt.Errorf("friend info data is nil")
 	}
 	return &friendInfo.Friend, nil
 }
@@ -325,7 +284,7 @@ func (s *Session) GetFriendInfo(userID int64, noCache bool) (*Friend, error) {
 func (s *Session) GetGroupList(noCache bool) ([]GroupInfo, error) {
 	request, err := s.Request("POST", EndpointGetGroupList, map[string]interface{}{
 		"no_cache": noCache,
-	}, WithHeader("Content-Type", "application/json"))
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -333,22 +292,8 @@ func (s *Session) GetGroupList(noCache bool) ([]GroupInfo, error) {
 	var groupList struct {
 		Groups []GroupInfo `json:"groups"`
 	}
-	if err = unmarshal(request, &apiResponse); err != nil {
-		s.Logger.Errorf("Failed to unmarshal group list: %v", err)
+	if err = handleAPIResponse(request, &apiResponse, &groupList); err != nil {
 		return nil, err
-	}
-	if apiResponse.RetCode != 0 || apiResponse.Status != "ok" {
-		s.Logger.Errorf("Get group list failed: %s", apiResponse.Message)
-		return nil, fmt.Errorf("get group list failed: %s", apiResponse.Message)
-	}
-	if apiResponse.Data != nil {
-		if err = unmarshal(apiResponse.Data, &groupList); err != nil {
-			s.Logger.Errorf("Failed to unmarshal group list data: %v", err)
-			return nil, err
-		}
-	} else {
-		s.Logger.Errorf("Group list data is nil")
-		return nil, fmt.Errorf("group list data is nil")
 	}
 	return groupList.Groups, nil
 }
@@ -357,7 +302,7 @@ func (s *Session) GetGroupInfo(groupID int64, noCache bool) (*GroupInfo, error) 
 	request, err := s.Request("POST", EndpointGetGroupInfo, map[string]interface{}{
 		"group_id": groupID,
 		"no_cache": noCache,
-	}, WithHeader("Content-Type", "application/json"))
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -365,22 +310,8 @@ func (s *Session) GetGroupInfo(groupID int64, noCache bool) (*GroupInfo, error) 
 	var groupInfo struct {
 		Group GroupInfo `json:"group"`
 	}
-	if err = unmarshal(request, &apiResponse); err != nil {
-		s.Logger.Errorf("Failed to unmarshal group info: %v", err)
+	if err = handleAPIResponse(request, &apiResponse, &groupInfo); err != nil {
 		return nil, err
-	}
-	if apiResponse.RetCode != 0 || apiResponse.Status != "ok" {
-		s.Logger.Errorf("Get group info failed: %s", apiResponse.Message)
-		return nil, fmt.Errorf("get group info failed: %s", apiResponse.Message)
-	}
-	if apiResponse.Data != nil {
-		if err = unmarshal(apiResponse.Data, &groupInfo); err != nil {
-			s.Logger.Errorf("Failed to unmarshal group info data: %v", err)
-			return nil, err
-		}
-	} else {
-		s.Logger.Errorf("Group info data is nil")
-		return nil, fmt.Errorf("group info data is nil")
 	}
 	return &groupInfo.Group, nil
 }
@@ -389,7 +320,7 @@ func (s *Session) GetGroupMemberList(groupID int64, noCache bool) ([]GroupMember
 	request, err := s.Request("POST", EndpointGetGroupMemberList, map[string]interface{}{
 		"group_id": groupID,
 		"no_cache": noCache,
-	}, WithHeader("Content-Type", "application/json"))
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -397,22 +328,8 @@ func (s *Session) GetGroupMemberList(groupID int64, noCache bool) ([]GroupMember
 	var memberList struct {
 		Members []GroupMemberInfo `json:"members"`
 	}
-	if err = unmarshal(request, &apiResponse); err != nil {
-		s.Logger.Errorf("Failed to unmarshal group member list: %v", err)
+	if err = handleAPIResponse(request, &apiResponse, &memberList); err != nil {
 		return nil, err
-	}
-	if apiResponse.RetCode != 0 || apiResponse.Status != "ok" {
-		s.Logger.Errorf("Get group member list failed: %s", apiResponse.Message)
-		return nil, fmt.Errorf("get group member list failed: %s", apiResponse.Message)
-	}
-	if apiResponse.Data != nil {
-		if err = unmarshal(apiResponse.Data, &memberList); err != nil {
-			s.Logger.Errorf("Failed to unmarshal group member list data: %v", err)
-			return nil, err
-		}
-	} else {
-		s.Logger.Errorf("Group member list data is nil")
-		return nil, fmt.Errorf("group member list data is nil")
 	}
 	return memberList.Members, nil
 }
@@ -422,7 +339,7 @@ func (s *Session) GetGroupMemberInfo(groupID, userID int64, noCache bool) (*Grou
 		"group_id": groupID,
 		"user_id":  userID,
 		"no_cache": noCache,
-	}, WithHeader("Content-Type", "application/json"))
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -430,22 +347,8 @@ func (s *Session) GetGroupMemberInfo(groupID, userID int64, noCache bool) (*Grou
 	var memberInfo struct {
 		Member GroupMemberInfo `json:"member"`
 	}
-	if err = unmarshal(request, &apiResponse); err != nil {
-		s.Logger.Errorf("Failed to unmarshal group member info: %v", err)
+	if err = handleAPIResponse(request, &apiResponse, &memberInfo); err != nil {
 		return nil, err
-	}
-	if apiResponse.RetCode != 0 || apiResponse.Status != "ok" {
-		s.Logger.Errorf("Get group member info failed: %s", apiResponse.Message)
-		return nil, fmt.Errorf("get group member info failed: %s", apiResponse.Message)
-	}
-	if apiResponse.Data != nil {
-		if err = unmarshal(apiResponse.Data, &memberInfo); err != nil {
-			s.Logger.Errorf("Failed to unmarshal group member info data: %v", err)
-			return nil, err
-		}
-	} else {
-		s.Logger.Errorf("Group member info data is nil")
-		return nil, fmt.Errorf("group member info data is nil")
 	}
 	return &memberInfo.Member, nil
 }
@@ -454,28 +357,15 @@ func (s *Session) SendGroupMessage(groupID int64, message *[]IMessageElement) (*
 	request, err := s.Request("POST", EndpointSendGroupMessage, map[string]interface{}{
 		"group_id": groupID,
 		"message":  message,
-	}, WithHeader("Content-Type", "application/json"))
+	})
 	if err != nil {
 		return nil, err
 	}
 	var apiResponse APIResponse
-	if err = unmarshal(request, &apiResponse); err != nil {
+	var messageRet MessageRet
+	if err = handleAPIResponse(request, &apiResponse, &messageRet); err != nil {
 		s.Logger.Errorf("Failed to unmarshal send group message response: %v", err)
 		return nil, err
-	}
-	if apiResponse.RetCode != 0 || apiResponse.Status != "ok" {
-		s.Logger.Errorf("Send group message failed: %s", apiResponse.Message)
-		return nil, fmt.Errorf("send group message failed: %s", apiResponse.Message)
-	}
-	var messageRet MessageRet
-	if apiResponse.Data != nil {
-		if err = unmarshal(apiResponse.Data, &messageRet); err != nil {
-			s.Logger.Errorf("Failed to unmarshal message ret data: %v", err)
-			return nil, err
-		}
-	} else {
-		s.Logger.Errorf("Send group message data is nil")
-		return nil, fmt.Errorf("send group message data is nil")
 	}
 	return &messageRet, nil
 }
@@ -484,28 +374,15 @@ func (s *Session) SendPrivateMessage(userID int64, message *[]IMessageElement) (
 	request, err := s.Request("POST", EndpointSendPrivateMessage, map[string]interface{}{
 		"user_id": userID,
 		"message": message,
-	}, WithHeader("Content-Type", "application/json"))
+	})
 	if err != nil {
 		return nil, err
 	}
 	var apiResponse APIResponse
-	if err = unmarshal(request, &apiResponse); err != nil {
+	var messageRet MessageRet
+	if err = handleAPIResponse(request, &apiResponse, &messageRet); err != nil {
 		s.Logger.Errorf("Failed to unmarshal send private message response: %v", err)
 		return nil, err
-	}
-	if apiResponse.RetCode != 0 || apiResponse.Status != "ok" {
-		s.Logger.Errorf("Send private message failed: %s", apiResponse.Message)
-		return nil, fmt.Errorf("send private message failed: %s", apiResponse.Message)
-	}
-	var messageRet MessageRet
-	if apiResponse.Data != nil {
-		if err = unmarshal(apiResponse.Data, &messageRet); err != nil {
-			s.Logger.Errorf("Failed to unmarshal message ret data: %v", err)
-			return nil, err
-		}
-	} else {
-		s.Logger.Errorf("Send private message data is nil")
-		return nil, fmt.Errorf("send private message data is nil")
 	}
 	return &messageRet, nil
 }
@@ -515,28 +392,14 @@ func (s *Session) GetMessage(messageScene string, peerID int64, messageSeq int64
 		"message_scene": messageScene,
 		"peer_id":       peerID,
 		"message_seq":   messageSeq,
-	}, WithHeader("Content-Type", "application/json"))
+	})
 	if err != nil {
 		return nil, err
 	}
 	var apiResponse APIResponse
 	var receiveMessage ReceiveMessage
-	if err = unmarshal(request, &apiResponse); err != nil {
-		s.Logger.Errorf("Failed to unmarshal get message response: %v", err)
+	if err = handleAPIResponse(request, &apiResponse, &receiveMessage); err != nil {
 		return nil, err
-	}
-	if apiResponse.RetCode != 0 || apiResponse.Status != "ok" {
-		s.Logger.Errorf("Get message failed: %s", apiResponse.Message)
-		return nil, fmt.Errorf("get message failed: %s", apiResponse.Message)
-	}
-	if apiResponse.Data != nil {
-		if err = unmarshal(apiResponse.Data, &receiveMessage); err != nil {
-			s.Logger.Errorf("Failed to unmarshal receive message data: %v", err)
-			return nil, err
-		}
-	} else {
-		s.Logger.Errorf("Get message data is nil")
-		return nil, fmt.Errorf("get message data is nil")
 	}
 	return &receiveMessage, nil
 }
@@ -548,28 +411,14 @@ func (s *Session) GetHistoryMessages(messageScene string, peerID int64, startMes
 		"start_message_seq": startMessageSeq,
 		"direction":         direction,
 		"limit":             limit,
-	}, WithHeader("Content-Type", "application/json"))
+	})
 	if err != nil {
 		return nil, err
 	}
 	var apiResponse APIResponse
 	var historyMessages []ReceiveMessage
-	if err = unmarshal(request, &apiResponse); err != nil {
-		s.Logger.Errorf("Failed to unmarshal get history message response: %v", err)
+	if err = handleAPIResponse(request, &apiResponse, &historyMessages); err != nil {
 		return nil, err
-	}
-	if apiResponse.RetCode != 0 || apiResponse.Status != "ok" {
-		s.Logger.Errorf("Get history message failed: %s", apiResponse.Message)
-		return nil, fmt.Errorf("get history message failed: %s", apiResponse.Message)
-	}
-	if apiResponse.Data != nil {
-		if err = unmarshal(apiResponse.Data, &historyMessages); err != nil {
-			s.Logger.Errorf("Failed to unmarshal history messages data: %v", err)
-			return nil, err
-		}
-	} else {
-		s.Logger.Errorf("Get history message data is nil")
-		return nil, fmt.Errorf("get history message data is nil")
 	}
 	return &historyMessages, nil
 }
@@ -578,79 +427,47 @@ func (s *Session) SendFriendNudge(userID int64, isSelf bool) error {
 	request, err := s.Request("POST", EndpointSendFriendNudge, map[string]interface{}{
 		"user_id": userID,
 		"is_self": isSelf,
-	}, WithHeader("Content-Type", "application/json"))
+	})
 	if err != nil {
 		return err
 	}
 	var apiResponse APIResponse
-	if err = unmarshal(request, &apiResponse); err != nil {
-		s.Logger.Errorf("Failed to unmarshal send friend nudge response: %v", err)
-		return err
-	}
-	if apiResponse.RetCode != 0 || apiResponse.Status != "ok" {
-		s.Logger.Errorf("Send friend nudge failed: %s", apiResponse.Message)
-		return fmt.Errorf("send friend nudge failed: %s", apiResponse.Message)
-	}
-	return nil
+	return handleAPIResponse(request, &apiResponse, nil)
 }
 
 func (s *Session) QuitGroup(groupID int64) error {
 	request, err := s.Request("POST", EndpointQuitGroup, map[string]interface{}{
 		"group_id": groupID,
-	}, WithHeader("Content-Type", "application/json"))
+	})
 	if err != nil {
 		return err
 	}
 	var apiResponse APIResponse
-	if err = unmarshal(request, &apiResponse); err != nil {
-		s.Logger.Errorf("Failed to unmarshal quit group response: %v", err)
-		return err
-	}
-	if apiResponse.RetCode != 0 || apiResponse.Status != "ok" {
-		s.Logger.Errorf("Quit group failed: %s", apiResponse.Message)
-		return fmt.Errorf("quit group failed: %s", apiResponse.Message)
-	}
-	return nil
+	return handleAPIResponse(request, &apiResponse, nil)
 }
 
 func (s *Session) SendGroupNudge(groupID int64, userID string) error {
 	request, err := s.Request("POST", EndpointSendGroupNudge, map[string]interface{}{
 		"group_id": groupID,
 		"user_id":  userID,
-	}, WithHeader("Content-Type", "application/json"))
+	})
 	if err != nil {
 		return err
 	}
 	var apiResponse APIResponse
-	if err = unmarshal(request, &apiResponse); err != nil {
-		s.Logger.Errorf("Failed to unmarshal send group nudge response: %v", err)
-		return err
-	}
-	if apiResponse.RetCode != 0 || apiResponse.Status != "ok" {
-		s.Logger.Errorf("Send group nudge failed: %s", apiResponse.Message)
-		return fmt.Errorf("send group nudge failed: %s", apiResponse.Message)
-	}
-	return nil
+	return handleAPIResponse(request, &apiResponse, nil)
 }
 
 func (s *Session) SetGroupName(groupID int64, name string) error {
 	request, err := s.Request("POST", EndpointSetGroupName, map[string]interface{}{
 		"group_id": groupID,
 		"name":     name,
-	}, WithHeader("Content-Type", "application/json"))
+	})
 	if err != nil {
 		return err
 	}
 	var apiResponse APIResponse
-	if err = unmarshal(request, &apiResponse); err != nil {
-		s.Logger.Errorf("Failed to unmarshal set group name response: %v", err)
-		return err
-	}
-	if apiResponse.RetCode != 0 || apiResponse.Status != "ok" {
-		s.Logger.Errorf("Set group name failed: %s", apiResponse.Message)
-		return fmt.Errorf("set group name failed: %s", apiResponse.Message)
-	}
-	return nil
+	return handleAPIResponse(request, &apiResponse, nil)
 }
 
 func (s *Session) SetGroupMemberCard(groupID int64, userID int64, card string) error {
@@ -658,20 +475,12 @@ func (s *Session) SetGroupMemberCard(groupID int64, userID int64, card string) e
 		"group_id": groupID,
 		"user_id":  userID,
 		"card":     card,
-	}, WithHeader("Content-Type", "application/json"))
+	})
 	if err != nil {
 		return err
 	}
 	var apiResponse APIResponse
-	if err = unmarshal(request, &apiResponse); err != nil {
-		s.Logger.Errorf("Failed to unmarshal set group member card response: %v", err)
-		return err
-	}
-	if apiResponse.RetCode != 0 || apiResponse.Status != "ok" {
-		s.Logger.Errorf("Set group member card failed: %s", apiResponse.Message)
-		return fmt.Errorf("set group member card failed: %s", apiResponse.Message)
-	}
-	return nil
+	return handleAPIResponse(request, &apiResponse, nil)
 }
 
 func (s *Session) SetGroupMemberSpecialTitle(groupID int64, userID int64, specialTitle string) error {
@@ -679,20 +488,12 @@ func (s *Session) SetGroupMemberSpecialTitle(groupID int64, userID int64, specia
 		"group_id":      groupID,
 		"user_id":       userID,
 		"special_title": specialTitle,
-	}, WithHeader("Content-Type", "application/json"))
+	})
 	if err != nil {
 		return err
 	}
 	var apiResponse APIResponse
-	if err = unmarshal(request, &apiResponse); err != nil {
-		s.Logger.Errorf("Failed to unmarshal set group member special title response: %v", err)
-		return err
-	}
-	if apiResponse.RetCode != 0 || apiResponse.Status != "ok" {
-		s.Logger.Errorf("Set group member special title failed: %s", apiResponse.Message)
-		return fmt.Errorf("set group member special title failed: %s", apiResponse.Message)
-	}
-	return nil
+	return handleAPIResponse(request, &apiResponse, nil)
 }
 
 func (s *Session) SetGroupAdmin(groupID int64, userID int64, isSet bool) error {
@@ -700,20 +501,12 @@ func (s *Session) SetGroupAdmin(groupID int64, userID int64, isSet bool) error {
 		"group_id": groupID,
 		"user_id":  userID,
 		"is_admin": isSet,
-	}, WithHeader("Content-Type", "application/json"))
+	})
 	if err != nil {
 		return err
 	}
 	var apiResponse APIResponse
-	if err = unmarshal(request, &apiResponse); err != nil {
-		s.Logger.Errorf("Failed to unmarshal set group admin response: %v", err)
-		return err
-	}
-	if apiResponse.RetCode != 0 || apiResponse.Status != "ok" {
-		s.Logger.Errorf("Set group admin failed: %s", apiResponse.Message)
-		return fmt.Errorf("set group admin failed: %s", apiResponse.Message)
-	}
-	return nil
+	return handleAPIResponse(request, &apiResponse, nil)
 }
 
 func (s *Session) SetGroupMemberMute(groupID int64, userID int64, duration int64) error {
@@ -721,40 +514,24 @@ func (s *Session) SetGroupMemberMute(groupID int64, userID int64, duration int64
 		"group_id": groupID,
 		"user_id":  userID,
 		"duration": duration,
-	}, WithHeader("Content-Type", "application/json"))
+	})
 	if err != nil {
 		return err
 	}
 	var apiResponse APIResponse
-	if err = unmarshal(request, &apiResponse); err != nil {
-		s.Logger.Errorf("Failed to unmarshal set group member mute response: %v", err)
-		return err
-	}
-	if apiResponse.RetCode != 0 || apiResponse.Status != "ok" {
-		s.Logger.Errorf("Set group member mute failed: %s", apiResponse.Message)
-		return fmt.Errorf("set group member mute failed: %s", apiResponse.Message)
-	}
-	return nil
+	return handleAPIResponse(request, &apiResponse, nil)
 }
 
 func (s *Session) SetGroupWholeMute(groupID int64, isMute bool) error {
 	request, err := s.Request("POST", EndpointSetGroupWholeMute, map[string]interface{}{
 		"group_id": groupID,
 		"is_mute":  isMute,
-	}, WithHeader("Content-Type", "application/json"))
+	})
 	if err != nil {
 		return err
 	}
 	var apiResponse APIResponse
-	if err = unmarshal(request, &apiResponse); err != nil {
-		s.Logger.Errorf("Failed to unmarshal set group whole mute response: %v", err)
-		return err
-	}
-	if apiResponse.RetCode != 0 || apiResponse.Status != "ok" {
-		s.Logger.Errorf("Set group whole mute failed: %s", apiResponse.Message)
-		return fmt.Errorf("set group whole mute failed: %s", apiResponse.Message)
-	}
-	return nil
+	return handleAPIResponse(request, &apiResponse, nil)
 }
 
 func (s *Session) KickGroupMember(groupID int64, userID int64, rejectAddRequest bool) error {
@@ -762,20 +539,12 @@ func (s *Session) KickGroupMember(groupID int64, userID int64, rejectAddRequest 
 		"group_id":           groupID,
 		"user_id":            userID,
 		"reject_add_request": rejectAddRequest,
-	}, WithHeader("Content-Type", "application/json"))
+	})
 	if err != nil {
 		return err
 	}
 	var apiResponse APIResponse
-	if err = unmarshal(request, &apiResponse); err != nil {
-		s.Logger.Errorf("Failed to unmarshal kick group member response: %v", err)
-		return err
-	}
-	if apiResponse.RetCode != 0 || apiResponse.Status != "ok" {
-		s.Logger.Errorf("Kick group member failed: %s", apiResponse.Message)
-		return fmt.Errorf("kick group member failed: %s", apiResponse.Message)
-	}
-	return nil
+	return handleAPIResponse(request, &apiResponse, nil)
 }
 
 func (s *Session) UploadGroupFile(groupID int64, fileURI string, fileName string, parentFolderID string) (string, error) {
@@ -784,7 +553,7 @@ func (s *Session) UploadGroupFile(groupID int64, fileURI string, fileName string
 		"file_uri":         fileURI,
 		"file_name":        fileName,
 		"parent_folder_id": parentFolderID,
-	}, WithHeader("Content-Type", "application/json"))
+	})
 	if err != nil {
 		return "", err
 	}
@@ -792,22 +561,8 @@ func (s *Session) UploadGroupFile(groupID int64, fileURI string, fileName string
 	var uploadFileResponse struct {
 		FileID string `json:"file_id"`
 	}
-	if err = unmarshal(request, &apiResponse); err != nil {
-		s.Logger.Errorf("Failed to unmarshal upload group file response: %v", err)
+	if err = handleAPIResponse(request, &apiResponse, &uploadFileResponse); err != nil {
 		return "", err
-	}
-	if apiResponse.RetCode != 0 || apiResponse.Status != "ok" {
-		s.Logger.Errorf("Upload group file failed: %s", apiResponse.Message)
-		return "", fmt.Errorf("upload group file failed: %s", apiResponse.Message)
-	}
-	if apiResponse.Data != nil {
-		if err = unmarshal(apiResponse.Data, &uploadFileResponse); err != nil {
-			s.Logger.Errorf("Failed to unmarshal upload file response data: %v", err)
-			return "", err
-		}
-	} else {
-		s.Logger.Errorf("Upload group file data is nil")
-		return "", fmt.Errorf("upload group file data is nil")
 	}
 	return uploadFileResponse.FileID, nil
 }
@@ -816,7 +571,7 @@ func (s *Session) GetGroupFileDownloadURL(groupID int64, fileID string) (string,
 	request, err := s.Request("POST", EndpointGetGroupFileDownloadURL, map[string]interface{}{
 		"group_id": groupID,
 		"file_id":  fileID,
-	}, WithHeader("Content-Type", "application/json"))
+	})
 	if err != nil {
 		return "", err
 	}
@@ -824,22 +579,9 @@ func (s *Session) GetGroupFileDownloadURL(groupID int64, fileID string) (string,
 	var downloadURLResponse struct {
 		DownloadURL string `json:"download_url"`
 	}
-	if err = unmarshal(request, &apiResponse); err != nil {
+	if err = handleAPIResponse(request, &apiResponse, &downloadURLResponse); err != nil {
 		s.Logger.Errorf("Failed to unmarshal get group file download URL response: %v", err)
 		return "", err
-	}
-	if apiResponse.RetCode != 0 || apiResponse.Status != "ok" {
-		s.Logger.Errorf("Get group file download URL failed: %s", apiResponse.Message)
-		return "", fmt.Errorf("get group file download URL failed: %s", apiResponse.Message)
-	}
-	if apiResponse.Data != nil {
-		if err = unmarshal(apiResponse.Data, &downloadURLResponse); err != nil {
-			s.Logger.Errorf("Failed to unmarshal download URL response data: %v", err)
-			return "", err
-		}
-	} else {
-		s.Logger.Errorf("Get group file download URL data is nil")
-		return "", fmt.Errorf("get group file download URL data is nil")
 	}
 	return downloadURLResponse.DownloadURL, nil
 }
@@ -848,18 +590,10 @@ func (s *Session) DeleteGroupFile(groupID int64, fileID string) error {
 	request, err := s.Request("POST", EndpointDeleteGroupFile, map[string]interface{}{
 		"group_id": groupID,
 		"file_id":  fileID,
-	}, WithHeader("Content-Type", "application/json"))
+	})
 	if err != nil {
 		return err
 	}
 	var apiResponse APIResponse
-	if err = unmarshal(request, &apiResponse); err != nil {
-		s.Logger.Errorf("Failed to unmarshal delete group file response: %v", err)
-		return err
-	}
-	if apiResponse.RetCode != 0 || apiResponse.Status != "ok" {
-		s.Logger.Errorf("Delete group file failed: %s", apiResponse.Message)
-		return fmt.Errorf("delete group file failed: %s", apiResponse.Message)
-	}
-	return nil
+	return handleAPIResponse(request, &apiResponse, nil)
 }

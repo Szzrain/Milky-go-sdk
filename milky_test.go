@@ -12,6 +12,7 @@ import (
 // TEST_ACCESS_TOKEN: Access token for authentication with MilkyGo SDK (optional).
 // TEST_TARGET_USER_ID: User ID to send private messages to (optional).
 // TEST_TARGET_GROUP_ID: Group ID to send group messages to (optional).
+// TEST_SEND_FILE_URI: URI of the file to upload to a group (optional).
 
 type TestLogger struct {
 }
@@ -115,12 +116,12 @@ func TestMilky(m *testing.T) {
 	}
 	var elements []IMessageElement
 	elements = append(elements, &text)
-	friendList, err := session.GetFriendList(true)
+	friendList, err := session.GetFriendList(false)
 	if err != nil {
 		m.Fatalf("Failed to get friend list: %v", err)
 	}
 	logger.Infof("Friend list: %v", friendList)
-	groupList, err := session.GetGroupList(true)
+	groupList, err := session.GetGroupList(false)
 	if err != nil {
 		m.Fatalf("Failed to get group list: %v", err)
 	}
@@ -139,6 +140,10 @@ func TestMilky(m *testing.T) {
 	//targetGroupIDInt, err := strconv.ParseInt(targetGroupID, 10, 64)
 	//if err != nil {
 	//	m.Fatalf("Invalid TEST_TARGET_GROUP_ID: %v", err)
+	//}
+	//err = session.SetGroupMemberCard(targetGroupIDInt, targetUserIDInt, "MilkyGo SDK Test Card")
+	//if err != nil {
+	//	m.Fatalf("Failed to set group member card: %v", err)
 	//}
 	//file, err := session.UploadGroupFile(targetGroupIDInt, os.Getenv("TEST_SEND_FILE_URI"), "file.txt", "")
 	//if err != nil {
