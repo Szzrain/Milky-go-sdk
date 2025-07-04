@@ -580,7 +580,6 @@ func (s *Session) GetGroupFileDownloadURL(groupID int64, fileID string) (string,
 		DownloadURL string `json:"download_url"`
 	}
 	if err = handleAPIResponse(request, &apiResponse, &downloadURLResponse); err != nil {
-		s.Logger.Errorf("Failed to unmarshal get group file download URL response: %v", err)
 		return "", err
 	}
 	return downloadURLResponse.DownloadURL, nil
