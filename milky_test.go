@@ -141,6 +141,10 @@ func TestMilky(m *testing.T) {
 	//if err != nil {
 	//	m.Fatalf("Invalid TEST_TARGET_GROUP_ID: %v", err)
 	//}
+	//err = session.QuitGroup(targetGroupIDInt)
+	//if err != nil {
+	//	m.Fatalf("Failed to quit group: %v", err)
+	//}
 	//err = session.SetGroupMemberCard(targetGroupIDInt, targetUserIDInt, "MilkyGo SDK Test Card")
 	//if err != nil {
 	//	m.Fatalf("Failed to set group member card: %v", err)

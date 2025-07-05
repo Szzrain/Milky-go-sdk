@@ -212,10 +212,8 @@ func handleAPIResponse(request []byte, apiResponse *APIResponse, data interface{
 	if apiResponse.RetCode != 0 || apiResponse.Status != "ok" {
 		return fmt.Errorf("API call failed: %s", apiResponse.Message)
 	}
-	if apiResponse.Data != nil {
+	if apiResponse.Data != nil && data != nil {
 		return unmarshal(apiResponse.Data, data)
-	} else if data != nil {
-		return fmt.Errorf("API call returned no data")
 	}
 	return nil
 }
