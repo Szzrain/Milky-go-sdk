@@ -151,6 +151,12 @@ type BotOffline struct {
 	Reason string `json:"reason"` // 原因
 }
 
+type GroupNudge struct {
+	GroupID    int64 `json:"group_id"`    // 群号
+	SenderID   int64 `json:"sender_id"`   // 发送者ID
+	ReceiverID int64 `json:"receiver_id"` // 接收者ID
+}
+
 const maxFileSize = 1024 * 1024 * 50 // 50MB
 
 type TextElement struct {

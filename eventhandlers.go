@@ -7,6 +7,7 @@ const (
 	messageReceiveEventType = "message_receive"
 	friendRequestEventType  = "friend_request"
 	botOfflineEventType     = "bot_offline"
+	groupNudgeEventType     = "group_nudge"
 )
 
 func handlerForInterface(handler interface{}) EventHandler {
@@ -19,6 +20,8 @@ func handlerForInterface(handler interface{}) EventHandler {
 		return friendRequestEventHandler(v)
 	case func(*Session, *BotOffline):
 		return botOfflineEventHandler(v)
+	case func(*Session, *GroupNudge):
+		return groupNudgeEventHandler(v)
 	}
 
 	return nil
@@ -79,8 +82,25 @@ func (eh botOfflineEventHandler) New() interface{} {
 	return &BotOffline{}
 }
 
+type groupNudgeEventHandler func(*Session, *GroupNudge)
+
+func (eh groupNudgeEventHandler) Type() string {
+	return groupNudgeEventType
+}
+
+func (eh groupNudgeEventHandler) New() interface{} {
+	return &GroupNudge{}
+}
+
+func (eh groupNudgeEventHandler) Handle(s *Session, i interface{}) {
+	if t, ok := i.(*GroupNudge); ok {
+		eh(s, t)
+	}
+}
+
 func init() {
 	registerInterfaceProvider(messageReceiveEventHandler(nil))
 	registerInterfaceProvider(friendRequestEventHandler(nil))
 	registerInterfaceProvider(botOfflineEventHandler(nil))
+	registerInterfaceProvider(groupNudgeEventHandler(nil))
 }
