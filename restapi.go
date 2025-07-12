@@ -444,7 +444,7 @@ func (s *Session) QuitGroup(groupID int64) error {
 	return handleAPIResponse(request, &apiResponse, nil)
 }
 
-func (s *Session) SendGroupNudge(groupID int64, userID string) error {
+func (s *Session) SendGroupNudge(groupID int64, userID int64) error {
 	request, err := s.Request("POST", EndpointSendGroupNudge, map[string]interface{}{
 		"group_id": groupID,
 		"user_id":  userID,
