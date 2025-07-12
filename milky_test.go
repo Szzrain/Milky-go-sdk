@@ -116,12 +116,12 @@ func TestMilky(m *testing.T) {
 	}
 	var elements []IMessageElement
 	elements = append(elements, &text)
-	friendList, err := session.GetFriendList(false)
+	friendList, err := session.GetFriendList(true)
 	if err != nil {
 		m.Fatalf("Failed to get friend list: %v", err)
 	}
 	logger.Infof("Friend list: %v", friendList)
-	groupList, err := session.GetGroupList(false)
+	groupList, err := session.GetGroupList(true)
 	if err != nil {
 		m.Fatalf("Failed to get group list: %v", err)
 	}

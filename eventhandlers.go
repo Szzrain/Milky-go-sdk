@@ -4,10 +4,11 @@ package Milky_go_sdk
 // Following are all the event types.
 // Event type values are used to match the events returned
 const (
-	messageReceiveEventType = "message_receive"
-	friendRequestEventType  = "friend_request"
-	botOfflineEventType     = "bot_offline"
-	groupNudgeEventType     = "group_nudge"
+	messageReceiveEventType      = "message_receive"
+	friendRequestEventType       = "friend_request"
+	botOfflineEventType          = "bot_offline"
+	groupNudgeEventType          = "group_nudge"
+	groupMemberDecreaseEventType = "group_member_decrease"
 )
 
 func handlerForInterface(handler interface{}) EventHandler {
@@ -22,6 +23,8 @@ func handlerForInterface(handler interface{}) EventHandler {
 		return botOfflineEventHandler(v)
 	case func(*Session, *GroupNudge):
 		return groupNudgeEventHandler(v)
+	case func(*Session, *GroupMemberDecrease):
+		return groupMemberDecreaseEventHandler(v)
 	}
 
 	return nil
@@ -98,9 +101,27 @@ func (eh groupNudgeEventHandler) Handle(s *Session, i interface{}) {
 	}
 }
 
+// groupMemberDecreaseEventHandler is an event handler for GroupMemberDecrease events.
+type groupMemberDecreaseEventHandler func(*Session, *GroupMemberDecrease)
+
+func (eh groupMemberDecreaseEventHandler) Type() string {
+	return groupMemberDecreaseEventType
+}
+
+func (eh groupMemberDecreaseEventHandler) New() interface{} {
+	return &GroupMemberDecrease{}
+}
+
+func (eh groupMemberDecreaseEventHandler) Handle(s *Session, i interface{}) {
+	if t, ok := i.(*GroupMemberDecrease); ok {
+		eh(s, t)
+	}
+}
+
 func init() {
 	registerInterfaceProvider(messageReceiveEventHandler(nil))
 	registerInterfaceProvider(friendRequestEventHandler(nil))
 	registerInterfaceProvider(botOfflineEventHandler(nil))
 	registerInterfaceProvider(groupNudgeEventHandler(nil))
+	registerInterfaceProvider(groupMemberDecreaseEventHandler(nil))
 }

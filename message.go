@@ -157,6 +157,12 @@ type GroupNudge struct {
 	ReceiverID int64 `json:"receiver_id"` // 接收者ID
 }
 
+type GroupMemberDecrease struct {
+	GroupID    int64 `json:"group_id"`    // 群号
+	UserID     int64 `json:"user_id"`     // 退群用户ID
+	OperatorID int64 `json:"operator_id"` // 操作人ID
+}
+
 const maxFileSize = 1024 * 1024 * 50 // 50MB
 
 type TextElement struct {
