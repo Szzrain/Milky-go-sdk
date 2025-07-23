@@ -385,6 +385,29 @@ func (s *Session) SendPrivateMessage(userID int64, message *[]IMessageElement) (
 	return &messageRet, nil
 }
 
+func (s *Session) AcceptGroupInviteRequest(groupID int64, requestID string) error {
+	request, err := s.Request("POST", EndpointAcceptGroupInviteRequest, map[string]interface{}{
+		"group_id":   groupID,
+		"request_id": requestID,
+	})
+	if err != nil {
+		return err
+	}
+	var apiResponse APIResponse
+	return handleAPIResponse(request, &apiResponse, nil)
+}
+
+func (s *Session) AcceptFriendRequest(requestID string) error {
+	request, err := s.Request("POST", EndpointAcceptFriendRequest, map[string]interface{}{
+		"request_id": requestID,
+	})
+	if err != nil {
+		return err
+	}
+	var apiResponse APIResponse
+	return handleAPIResponse(request, &apiResponse, nil)
+}
+
 func (s *Session) GetMessage(messageScene string, peerID int64, messageSeq int64) (*ReceiveMessage, error) {
 	request, err := s.Request("POST", EndpointGetMessage, map[string]interface{}{
 		"message_scene": messageScene,

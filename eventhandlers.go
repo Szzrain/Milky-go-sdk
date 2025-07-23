@@ -9,6 +9,7 @@ const (
 	botOfflineEventType          = "bot_offline"
 	groupNudgeEventType          = "group_nudge"
 	groupMemberDecreaseEventType = "group_member_decrease"
+	groupInvitationEventType     = "group_invitation"
 )
 
 func handlerForInterface(handler interface{}) EventHandler {
@@ -25,6 +26,8 @@ func handlerForInterface(handler interface{}) EventHandler {
 		return groupNudgeEventHandler(v)
 	case func(*Session, *GroupMemberDecrease):
 		return groupMemberDecreaseEventHandler(v)
+	case func(*Session, *GroupInvitation):
+		return groupInvitationEventHandler(v)
 	}
 
 	return nil
@@ -118,10 +121,28 @@ func (eh groupMemberDecreaseEventHandler) Handle(s *Session, i interface{}) {
 	}
 }
 
+// groupInvitationEventHandler is an event handler for GroupInvitation events.
+type groupInvitationEventHandler func(*Session, *GroupInvitation)
+
+func (eh groupInvitationEventHandler) Type() string {
+	return groupInvitationEventType
+}
+
+func (eh groupInvitationEventHandler) New() interface{} {
+	return &GroupInvitation{}
+}
+
+func (eh groupInvitationEventHandler) Handle(s *Session, i interface{}) {
+	if t, ok := i.(*GroupInvitation); ok {
+		eh(s, t)
+	}
+}
+
 func init() {
 	registerInterfaceProvider(messageReceiveEventHandler(nil))
 	registerInterfaceProvider(friendRequestEventHandler(nil))
 	registerInterfaceProvider(botOfflineEventHandler(nil))
 	registerInterfaceProvider(groupNudgeEventHandler(nil))
 	registerInterfaceProvider(groupMemberDecreaseEventHandler(nil))
+	registerInterfaceProvider(groupInvitationEventHandler(nil))
 }
