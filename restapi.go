@@ -385,10 +385,10 @@ func (s *Session) SendPrivateMessage(userID int64, message *[]IMessageElement) (
 	return &messageRet, nil
 }
 
-func (s *Session) AcceptGroupInviteRequest(groupID int64, requestID string) error {
-	request, err := s.Request("POST", EndpointAcceptGroupInviteRequest, map[string]interface{}{
-		"group_id":   groupID,
-		"request_id": requestID,
+func (s *Session) AcceptGroupInvitation(groupID int64, invitationSeq string) error {
+	request, err := s.Request("POST", EndpointAcceptGroupInvitation, map[string]interface{}{
+		"group_id":       groupID,
+		"invitation_seq": invitationSeq,
 	})
 	if err != nil {
 		return err
@@ -397,9 +397,10 @@ func (s *Session) AcceptGroupInviteRequest(groupID int64, requestID string) erro
 	return handleAPIResponse(request, &apiResponse, nil)
 }
 
-func (s *Session) AcceptFriendRequest(requestID string) error {
+func (s *Session) AcceptFriendRequest(initiatorUid string, isFiltered bool) error {
 	request, err := s.Request("POST", EndpointAcceptFriendRequest, map[string]interface{}{
-		"request_id": requestID,
+		"is_filtered":   isFiltered,
+		"initiator_uid": initiatorUid,
 	})
 	if err != nil {
 		return err

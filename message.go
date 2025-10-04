@@ -116,13 +116,10 @@ type GroupFolder struct {
 }
 
 type FriendRequest struct {
-	RequestID   string `json:"request_id"`
-	Time        int64  `json:"time"`
-	IsFiltered  bool   `json:"is_filtered"`  // 是否被过滤
-	InitiatorID int64  `json:"initiator_id"` // 发起者ID
-	State       string `json:"state"`
-	Comment     string `json:"comment,omitempty"`
-	Via         string `json:"via,omitempty"`
+	InitiatorUID string `json:"initiator_uid"`
+	InitiatorID  int64  `json:"initiator_id"` // 发起者ID
+	Comment      string `json:"comment"`
+	Via          string `json:"via"`
 }
 
 type GroupRequest struct {
@@ -139,12 +136,9 @@ type GroupRequest struct {
 }
 
 type GroupInvitation struct {
-	RequestID   string `json:"request_id"`
-	Time        int64  `json:"time"`
-	IsFiltered  bool   `json:"is_filtered"`  // 是否被过滤
-	InitiatorID int64  `json:"initiator_id"` // 发起者ID
-	State       string `json:"state"`
-	GroupID     int64  `json:"group_id"`
+	InvitationSeq int64 `json:"invitation_seq"`
+	InitiatorID   int64 `json:"initiator_id"` // 发起者ID
+	GroupID       int64 `json:"group_id"`
 }
 
 type BotOffline struct {
@@ -152,9 +146,12 @@ type BotOffline struct {
 }
 
 type GroupNudge struct {
-	GroupID    int64 `json:"group_id"`    // 群号
-	SenderID   int64 `json:"sender_id"`   // 发送者ID
-	ReceiverID int64 `json:"receiver_id"` // 接收者ID
+	GroupID             int64  `json:"group_id"`    // 群号
+	SenderID            int64  `json:"sender_id"`   // 发送者ID
+	ReceiverID          int64  `json:"receiver_id"` // 接收者ID
+	DisplayAction       string `json:"display_action"`
+	DisplaySuffix       string `json:"display_suffix"`
+	DisplayActionImgUrl string `json:"display_action_img_url"`
 }
 
 type GroupMemberDecrease struct {

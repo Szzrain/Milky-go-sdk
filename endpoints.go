@@ -13,28 +13,44 @@ func newAPIEndpoints(gateway string) *apiEndpoints {
 
 // Endpoint 生成完整的 API 端点
 func (e *apiEndpoints) Endpoint(path string) string {
-	return fmt.Sprintf("%s/api/%s", e.Gateway, path)
+	return fmt.Sprintf("%s/%s", e.Gateway, path)
 }
 
 const (
-	EndpointGetLoginInfo               = "get_login_info"
-	EndpointGetImplInfo                = "get_impl_info"
-	EndpointGetFriendList              = "get_friend_list"
-	EndpointGetFriendInfo              = "get_friend_info"
-	EndpointGetGroupList               = "get_group_list"
-	EndpointGetGroupInfo               = "get_group_info"
-	EndpointGetGroupMemberList         = "get_group_member_list"
-	EndpointGetGroupMemberInfo         = "get_group_member_info"
-	EndpointSendPrivateMessage         = "send_private_message"
-	EndpointSendGroupMessage           = "send_group_message"
-	EndpointGetMessage                 = "get_message"
-	EndpointGetHistoryMessages         = "get_history_messages"
-	EndpointGetResourceTempURL         = "get_resource_temp_url"
-	EndpointGetForwardedMessages       = "get_forwarded_messages"
-	EndpointRecallPrivateMessage       = "recall_private_message"
-	EndpointRecallGroupMessage         = "recall_group_message"
-	EndpointSendFriendNudge            = "send_friend_nudge"
-	EndpointGetSendProfileLike         = "send_profile_like"
+	// EndpointGetLoginInfo System
+
+	EndpointGetLoginInfo       = "get_login_info"
+	EndpointGetImplInfo        = "get_impl_info"
+	EndpointGetFriendList      = "get_friend_list"
+	EndpointGetUserProfile     = "get_user_profile"
+	EndpointGetFriendInfo      = "get_friend_info"
+	EndpointGetGroupList       = "get_group_list"
+	EndpointGetGroupInfo       = "get_group_info"
+	EndpointGetGroupMemberList = "get_group_member_list"
+	EndpointGetGroupMemberInfo = "get_group_member_info"
+	EndpointGetCookies         = "get_cookies"
+	EndpointGetCSRFToken       = "get_csrf_token"
+
+	// EndpointSendPrivateMessage Message
+
+	EndpointSendPrivateMessage   = "send_private_message"
+	EndpointSendGroupMessage     = "send_group_message"
+	EndpointGetMessage           = "get_message"
+	EndpointGetHistoryMessages   = "get_history_messages"
+	EndpointGetResourceTempURL   = "get_resource_temp_url"
+	EndpointGetForwardedMessages = "get_forwarded_messages"
+	EndpointRecallPrivateMessage = "recall_private_message"
+	EndpointRecallGroupMessage   = "recall_group_message"
+
+	// EndpointSendFriendNudge Friend
+
+	EndpointSendFriendNudge     = "send_friend_nudge"
+	EndpointGetSendProfileLike  = "send_profile_like"
+	EndpointAcceptFriendRequest = "accept_friend_request"
+	EndpointRejectFriendRequest = "reject_friend_request"
+
+	// EndpointSetGroupName Group
+
 	EndpointSetGroupName               = "set_group_name"
 	EndpointSetGroupAvatar             = "set_group_avatar"
 	EndpointSetGroupMemberCard         = "set_group_member_card"
@@ -43,30 +59,34 @@ const (
 	EndpointSetGroupMemberMute         = "set_group_member_mute"
 	EndpointSetGroupWholeMute          = "set_group_whole_mute"
 	EndpointKickGroupMember            = "kick_group_member"
-	EndpointGetGroupAnnouncementList   = "get_group_announcement_list"
+	EndpointGetGroupAnnouncements      = "get_group_announcements"
 	EndpointSendGroupAnnouncement      = "send_group_announcement"
 	EndpointDeleteGroupAnnouncement    = "delete_group_announcement"
+	EndpointGetGroupEssenceMessages    = "get_group_essence_messages"
+	EndpointSetGroupEssenceMessage     = "set_group_essence_message"
 	EndpointQuitGroup                  = "quit_group"
 	EndpointSendGroupMessageReaction   = "send_group_message_reaction"
 	EndpointSendGroupNudge             = "send_group_nudge"
+	EndpointRejectGroupInvitation      = "reject_group_invitation"
+	EndpointAcceptGroupInvitation      = "accept_group_invitation"
+	EndpointAcceptGroupRequest         = "accept_group_request"
+	EndpointRejectGroupRequest         = "reject_group_request"
+	EndpointGetGroupNotifications      = "get_group_notifications"
 	EndpointGetFriendRequests          = "get_friend_requests"
 	EndpointGetGroupRequests           = "get_group_requests"
 	EndpointGetGroupInvitations        = "get_group_invitations"
-	EndpointAcceptFriendRequest        = "accept_friend_request"
-	EndpointAcceptGroupInviteRequest   = "accept_group_invite_request"
-	EndpointAcceptGroupJoinRequest     = "accept_group_join_request"
-	EndpointRejectFriendRequest        = "reject_friend_request"
-	EndpointRejectGroupInviteRequest   = "reject_group_invite_request"
-	EndpointRejectGroupJoinRequest     = "reject_group_join_request"
-	EndpointUploadPrivateFile          = "upload_private_file"
-	EndpointUploadGroupFile            = "upload_group_file"
-	EndpointGetPrivateFileDownloadURL  = "get_private_file_download_url"
-	EndpointGetGroupFileDownloadURL    = "get_group_file_download_url"
-	EndpointGetGroupFiles              = "get_group_files"
-	EndpointMoveGroupFile              = "move_group_file"
-	EndpointRenameGroupFile            = "rename_group_file"
-	EndpointDeleteGroupFile            = "delete_group_file"
-	EndpointCreateGroupFolder          = "create_group_folder"
-	EndpointRenameGroupFolder          = "rename_group_folder"
-	EndpointDeleteGroupFolder          = "delete_group_folder"
+
+	// EndpointUploadPrivateFile File
+
+	EndpointUploadPrivateFile         = "upload_private_file"
+	EndpointUploadGroupFile           = "upload_group_file"
+	EndpointGetPrivateFileDownloadURL = "get_private_file_download_url"
+	EndpointGetGroupFileDownloadURL   = "get_group_file_download_url"
+	EndpointGetGroupFiles             = "get_group_files"
+	EndpointMoveGroupFile             = "move_group_file"
+	EndpointRenameGroupFile           = "rename_group_file"
+	EndpointDeleteGroupFile           = "delete_group_file"
+	EndpointCreateGroupFolder         = "create_group_folder"
+	EndpointRenameGroupFolder         = "rename_group_folder"
+	EndpointDeleteGroupFolder         = "delete_group_folder"
 )

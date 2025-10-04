@@ -77,8 +77,8 @@ func TestMilky(m *testing.T) {
 		if m == nil {
 			return
 		}
-		fmt.Printf("Received friend request: UserId %d, Comment %s, State: %s\n", m.InitiatorID, m.Comment, m.State)
-		// err = session2.AcceptFriendRequest(m.RequestID)
+		fmt.Printf("Received friend request: UserId %d, Comment %s\n", m.InitiatorID, m.Comment)
+		// err = session2.AcceptFriendRequest(m.InvitationSeq)
 		// if err != nil {
 		// 	logger.Errorf("Failed to accept friend request: %v", err)
 		// 	return
@@ -94,8 +94,8 @@ func TestMilky(m *testing.T) {
 		if m == nil {
 			return
 		}
-		fmt.Printf("Received group invitation: GroupId %d, InitiatorId %d, RequestId %s\n", m.GroupID, m.InitiatorID, m.RequestID)
-		// err = session2.AcceptGroupInviteRequest(m.GroupID, m.RequestID)
+		fmt.Printf("Received group invitation: GroupId %d, InitiatorId %d, RequestId %d\n", m.GroupID, m.InitiatorID, m.InvitationSeq)
+		// err = session2.AcceptGroupInvitation(m.GroupID, m.InvitationSeq)
 		// if err != nil {
 		// 	logger.Errorf("Failed to accept group invite request: %v", err)
 		// 	return

@@ -1,12 +1,15 @@
 package Milky_go_sdk
 
 import (
-	"github.com/gorilla/websocket"
 	"net/http"
 	"time"
+
+	"github.com/gorilla/websocket"
 )
 
-const version = "0.3.0"
+const version = "0.4.0"
+
+const milkyVersion = "1.0.0-draft.19"
 
 func New(wsGateway string, restGateway string, token string, logger Logger) (s *Session, err error) {
 	// Create an empty Session interface.
@@ -15,7 +18,7 @@ func New(wsGateway string, restGateway string, token string, logger Logger) (s *
 		MaxRestRetries:         3,
 		Client:                 &http.Client{Timeout: 20 * time.Second},
 		Dialer:                 websocket.DefaultDialer,
-		UserAgent:              "MilkyGo (" + "v" + version + ")",
+		UserAgent:              "MilkyGo (" + "v" + version + ") (" + "Milky " + milkyVersion + ")",
 		LastHeartbeatAck:       time.Now().UTC(),
 		WSGateway:              wsGateway,
 		RestGateway:            restGateway,
