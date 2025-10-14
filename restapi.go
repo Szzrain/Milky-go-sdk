@@ -221,7 +221,7 @@ func handleAPIResponse(request []byte, apiResponse *APIResponse, data interface{
 func (s *Session) GetLoginInfo() (*LoginInfo, error) {
 	var apiResponse APIResponse
 	var loginInfo LoginInfo
-	request, err := s.Request("POST", EndpointGetLoginInfo, "{}")
+	request, err := s.Request("POST", EndpointGetLoginInfo, struct{}{})
 	if err != nil {
 		return nil, err
 	}
@@ -232,7 +232,7 @@ func (s *Session) GetLoginInfo() (*LoginInfo, error) {
 }
 
 func (s *Session) GetImplInfo() (*ImplInfo, error) {
-	request, err := s.Request("POST", EndpointGetImplInfo, "{}")
+	request, err := s.Request("POST", EndpointGetImplInfo, struct{}{})
 	if err != nil {
 		return nil, err
 	}

@@ -130,8 +130,14 @@ func TestMilky(m *testing.T) {
 	text := TextElement{
 		Text: "Hello, this is a test message from MilkyGo SDK!",
 	}
+	image := ImageElement{
+		URI:     "https://i2.hdslb.com/bfs/archive/7fac120d07a58a936bd877ceeb53f1e6388ee6e7.jpg",
+		Summary: "image.jpg",
+		SubType: "normal",
+	}
 	var elements []IMessageElement
 	elements = append(elements, &text)
+	elements = append(elements, &image)
 	friendList, err := session.GetFriendList(true)
 	if err != nil {
 		m.Fatalf("Failed to get friend list: %v", err)
