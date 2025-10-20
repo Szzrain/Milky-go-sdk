@@ -244,6 +244,21 @@ func (s *Session) GetImplInfo() (*ImplInfo, error) {
 	return &implInfo, nil
 }
 
+func (s *Session) GetUserProfile(userID int64) (*UserProfile, error) {
+	request, err := s.Request("POST", EndpointGetUserProfile, map[string]interface{}{
+		"user_id": userID,
+	})
+	if err != nil {
+		return nil, err
+	}
+	var apiResponse APIResponse
+	var userProfile UserProfile
+	if err = handleAPIResponse(request, &apiResponse, &userProfile); err != nil {
+		return nil, err
+	}
+	return &userProfile, nil
+}
+
 func (s *Session) GetFriendList(noCache bool) ([]Friend, error) {
 	request, err := s.Request("POST", EndpointGetFriendList, map[string]interface{}{
 		"no_cache": noCache,
@@ -351,6 +366,38 @@ func (s *Session) GetGroupMemberInfo(groupID, userID int64, noCache bool) (*Grou
 	return &memberInfo.Member, nil
 }
 
+func (s *Session) GetCookies(domain string) (string, error) {
+	request, err := s.Request("POST", EndpointGetCookies, map[string]interface{}{
+		"domain": domain,
+	})
+	if err != nil {
+		return "", err
+	}
+	var apiResponse APIResponse
+	var cookiesResponse struct {
+		Cookies string `json:"cookies"`
+	}
+	if err = handleAPIResponse(request, &apiResponse, &cookiesResponse); err != nil {
+		return "", err
+	}
+	return cookiesResponse.Cookies, nil
+}
+
+func (s *Session) GetCSRFToken() (string, error) {
+	request, err := s.Request("POST", EndpointGetCSRFToken, struct{}{})
+	if err != nil {
+		return "", err
+	}
+	var apiResponse APIResponse
+	var csrfResponse struct {
+		CSRFToken string `json:"csrf_token"`
+	}
+	if err = handleAPIResponse(request, &apiResponse, &csrfResponse); err != nil {
+		return "", err
+	}
+	return csrfResponse.CSRFToken, nil
+}
+
 func (s *Session) SendGroupMessage(groupID int64, message *[]IMessageElement) (*MessageRet, error) {
 	request, err := s.Request("POST", EndpointSendGroupMessage, map[string]interface{}{
 		"group_id": groupID,
@@ -426,12 +473,11 @@ func (s *Session) GetMessage(messageScene string, peerID int64, messageSeq int64
 	return &receiveMessage, nil
 }
 
-func (s *Session) GetHistoryMessages(messageScene string, peerID int64, startMessageSeq int64, direction string, limit int32) (*[]ReceiveMessage, error) {
+func (s *Session) GetHistoryMessages(messageScene string, peerID int64, startMessageSeq int64, limit int32) (*[]ReceiveMessage, error) {
 	request, err := s.Request("POST", EndpointGetHistoryMessages, map[string]interface{}{
 		"message_scene":     messageScene,
 		"peer_id":           peerID,
 		"start_message_seq": startMessageSeq,
-		"direction":         direction,
 		"limit":             limit,
 	})
 	if err != nil {
@@ -449,6 +495,18 @@ func (s *Session) SendFriendNudge(userID int64, isSelf bool) error {
 	request, err := s.Request("POST", EndpointSendFriendNudge, map[string]interface{}{
 		"user_id": userID,
 		"is_self": isSelf,
+	})
+	if err != nil {
+		return err
+	}
+	var apiResponse APIResponse
+	return handleAPIResponse(request, &apiResponse, nil)
+}
+
+func (s *Session) SendProfileLike(userID int64, count int32) error {
+	request, err := s.Request("POST", EndpointSendProfileLike, map[string]interface{}{
+		"user_id": userID,
+		"count":   count,
 	})
 	if err != nil {
 		return err

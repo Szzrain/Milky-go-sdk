@@ -9,7 +9,7 @@ import (
 
 const version = "0.4.0"
 
-const milkyVersion = "1.0.0-draft.19"
+const milkyVersion = "1.0.0"
 
 func New(wsGateway string, restGateway string, token string, logger Logger) (s *Session, err error) {
 	// Create an empty Session interface.

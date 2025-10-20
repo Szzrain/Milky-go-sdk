@@ -18,23 +18,23 @@ Ref:
 #### system
 
 - [x] /get_login_info
-- [ ] /get_impl_info
-- [ ] /get_user_profile
+- [x] /get_impl_info
+- [x] /get_user_profile
 - [x] /get_friend_list
-- [ ] /get_friend_info
+- [x] /get_friend_info
 - [x] /get_group_list
-- [ ] /get_group_info
+- [x] /get_group_info
 - [x] /get_group_member_list
-- [ ] /get_group_member_info
-- [ ] /get_cookies
-- [ ] /get_csrf_token
+- [x] /get_group_member_info
+- [x] /get_cookies
+- [x] /get_csrf_token
 
 #### message
 
 - [x] /send_private_message
 - [x] /send_group_message
-- [ ] /get_message
-- [ ] /get_history_messages
+- [x] /get_message
+- [x] /get_history_messages
 - [ ] /get_resource_temp_url
 - [ ] /get_forwarded_messages
 - [ ] /recall_private_message
@@ -44,9 +44,9 @@ Ref:
 #### friend
 
 - [x] /send_friend_nudge
-- [ ] /send_profile_like
+- [x] /send_profile_like
 - [ ] /get_friend_requests
-- [ ] /accept_friend_request
+- [x] /accept_friend_request
 - [ ] /reject_friend_request
 
 #### group
@@ -70,7 +70,7 @@ Ref:
 - [ ] /get_group_notifications
 - [ ] /accept_group_request
 - [ ] /reject_group_request
-- [ ] /accept_group_invitation
+- [x] /accept_group_invitation
 - [ ] /reject_group_invitation
 
 #### file

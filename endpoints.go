@@ -45,7 +45,7 @@ const (
 	// EndpointSendFriendNudge Friend
 
 	EndpointSendFriendNudge     = "send_friend_nudge"
-	EndpointGetSendProfileLike  = "send_profile_like"
+	EndpointSendProfileLike     = "send_profile_like"
 	EndpointAcceptFriendRequest = "accept_friend_request"
 	EndpointRejectFriendRequest = "reject_friend_request"
 

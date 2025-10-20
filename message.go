@@ -49,6 +49,19 @@ type ImplInfo struct {
 	MilkyVersion      string `json:"milky_version"` // Milky 协议版本
 }
 
+type UserProfile struct {
+	Nickname string `json:"nickname"`
+	Qid      string `json:"qid"`
+	Age      int32  `json:"age"`
+	Sex      string `json:"sex"`
+	Remark   string `json:"remark"`
+	Bio      string `json:"bio"`
+	Level    int32  `json:"level"`
+	Country  string `json:"country"`
+	City     string `json:"city"`
+	School   string `json:"school"`
+}
+
 type FriendCategory struct {
 	CategoryID   int32  `json:"category_id"`
 	CategoryName string `json:"category_name"`
