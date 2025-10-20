@@ -7,7 +7,7 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-const version = "0.5.1"
+const version = "1.0.0"
 
 const milkyVersion = "1.0.0"
 
