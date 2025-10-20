@@ -93,21 +93,21 @@ Ref:
 - [x] message_receive
 - [x] message_recall
 - [x] friend_request
-- [ ] group_join_request
-- [ ] group_invited_join_request
+- [x] group_join_request
+- [x] group_invited_join_request
 - [x] group_invitation
 - [x] friend_nudge
-- [ ] friend_file_upload
-- [ ] group_admin_change
-- [ ] group_essence_message_change
+- [x] friend_file_upload
+- [x] group_admin_change
+- [x] group_essence_message_change
 - [x] group_member_increase
 - [x] group_member_decrease
-- [ ] group_name_change
+- [x] group_name_change
 - [x] group_message_reaction
 - [x] group_mute
 - [x] group_whole_mute
 - [x] group_nudge
-- [ ] group_file_upload
+- [x] group_file_upload
 
 ### segment
 

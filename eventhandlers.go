@@ -4,20 +4,25 @@ package Milky_go_sdk
 // Following are all the event types.
 // Event type values are used to match the events returned
 const (
-	botOfflineEventType              = "bot_offline"
-	messageReceiveEventType          = "message_receive"
-	messageRecallEventType           = "message_recall"
-	friendRequestEventType           = "friend_request"
-	friendNudgeEventType             = "friend_nudge"
-	groupNudgeEventType              = "group_nudge"
-	groupMessageReactionEventType    = "group_message_reaction"
-	groupMuteEventType               = "group_mute"
-	groupWholeMuteEventType          = "group_whole_mute"
-	groupMemberIncreaseEventType     = "group_member_increase"
-	groupMemberDecreaseEventType     = "group_member_decrease"
-	groupJoinRequestEventType        = "group_join_request"
-	groupInvitedJoinRequestEventType = "group_invited_join_request"
-	groupInvitationEventType         = "group_invitation"
+	botOfflineEventType                = "bot_offline"
+	messageReceiveEventType            = "message_receive"
+	messageRecallEventType             = "message_recall"
+	friendRequestEventType             = "friend_request"
+	friendNudgeEventType               = "friend_nudge"
+	friendFileUploadEventType          = "friend_file_upload"
+	groupNudgeEventType                = "group_nudge"
+	groupMessageReactionEventType      = "group_message_reaction"
+	groupAdminChangeEventType          = "group_admin_change"
+	groupEssenceMessageChangeEventType = "group_essence_message_change"
+	groupNameChangeEventType           = "group_name_change"
+	groupFileUploadEventType           = "group_file_upload"
+	groupMuteEventType                 = "group_mute"
+	groupWholeMuteEventType            = "group_whole_mute"
+	groupMemberIncreaseEventType       = "group_member_increase"
+	groupMemberDecreaseEventType       = "group_member_decrease"
+	groupJoinRequestEventType          = "group_join_request"
+	groupInvitedJoinRequestEventType   = "group_invited_join_request"
+	groupInvitationEventType           = "group_invitation"
 )
 
 func handlerForInterface(handler interface{}) EventHandler {
@@ -32,6 +37,8 @@ func handlerForInterface(handler interface{}) EventHandler {
 		return botOfflineEventHandler(v)
 	case func(*Session, *FriendNudge):
 		return friendNudgeEventHandler(v)
+	case func(*Session, *FriendFileUpload):
+		return friendFileUploadEventHandler(v)
 	case func(*Session, *GroupNudge):
 		return groupNudgeEventHandler(v)
 	case func(*Session, *GroupMessageReaction):
@@ -46,11 +53,23 @@ func handlerForInterface(handler interface{}) EventHandler {
 		return groupMemberDecreaseEventHandler(v)
 	case func(*Session, *GroupInvitation):
 		return groupInvitationEventHandler(v)
+	case func(*Session, *GroupJoinRequest):
+		return groupJoinRequestEventHandler(v)
+	case func(*Session, *GroupInvitedJoinRequest):
+		return groupInvitedJoinRequestEventHandler(v)
 	case func(*Session, *MessageRecall):
 		return messageRecallEventHandler(v)
+	case func(*Session, *GroupAdminChange):
+		return groupAdminChangeEventHandler(v)
+	case func(*Session, *GroupEssenceMessageChange):
+		return groupEssenceMessageChangeEventHandler(v)
+	case func(*Session, *GroupNameChange):
+		return groupNameChangeEventHandler(v)
+	case func(*Session, *GroupFileUpload):
+		return groupFileUploadEventHandler(v)
+	default:
+		return nil
 	}
-
-	return nil
 }
 
 // messageReceiveEventHandler is an event handler for ReceiveMessage events.
@@ -222,6 +241,102 @@ func (eh groupInvitationEventHandler) Handle(s *Session, i interface{}) {
 	}
 }
 
+type groupJoinRequestEventHandler func(*Session, *GroupJoinRequest)
+
+func (eh groupJoinRequestEventHandler) Type() string {
+	return groupJoinRequestEventType
+}
+
+func (eh groupJoinRequestEventHandler) New() interface{} {
+	return &GroupJoinRequest{}
+}
+
+func (eh groupJoinRequestEventHandler) Handle(s *Session, i interface{}) {
+	if t, ok := i.(*GroupJoinRequest); ok {
+		eh(s, t)
+	}
+}
+
+type groupInvitedJoinRequestEventHandler func(*Session, *GroupInvitedJoinRequest)
+
+func (eh groupInvitedJoinRequestEventHandler) Type() string {
+	return groupInvitedJoinRequestEventType
+}
+
+func (eh groupInvitedJoinRequestEventHandler) New() interface{} {
+	return &GroupInvitedJoinRequest{}
+}
+
+func (eh groupInvitedJoinRequestEventHandler) Handle(s *Session, i interface{}) {
+	if t, ok := i.(*GroupInvitedJoinRequest); ok {
+		eh(s, t)
+	}
+}
+
+type groupAdminChangeEventHandler func(*Session, *GroupAdminChange)
+
+func (eh groupAdminChangeEventHandler) Type() string {
+	return groupAdminChangeEventType
+}
+
+func (eh groupAdminChangeEventHandler) New() interface{} {
+	return &GroupAdminChange{}
+}
+
+func (eh groupAdminChangeEventHandler) Handle(s *Session, i interface{}) {
+	if t, ok := i.(*GroupAdminChange); ok {
+		eh(s, t)
+	}
+}
+
+type groupEssenceMessageChangeEventHandler func(*Session, *GroupEssenceMessageChange)
+
+func (eh groupEssenceMessageChangeEventHandler) Type() string {
+	return groupEssenceMessageChangeEventType
+}
+
+func (eh groupEssenceMessageChangeEventHandler) New() interface{} {
+	return &GroupEssenceMessageChange{}
+}
+
+func (eh groupEssenceMessageChangeEventHandler) Handle(s *Session, i interface{}) {
+	if t, ok := i.(*GroupEssenceMessageChange); ok {
+		eh(s, t)
+	}
+}
+
+type groupNameChangeEventHandler func(*Session, *GroupNameChange)
+
+func (eh groupNameChangeEventHandler) Type() string {
+	return groupNameChangeEventType
+}
+
+func (eh groupNameChangeEventHandler) New() interface{} {
+	return &GroupNameChange{}
+}
+
+func (eh groupNameChangeEventHandler) Handle(s *Session, i interface{}) {
+	if t, ok := i.(*GroupNameChange); ok {
+		eh(s, t)
+	}
+}
+
+type groupFileUploadEventHandler func(*Session, *GroupFileUpload)
+
+func (eh groupFileUploadEventHandler) Type() string {
+	return groupFileUploadEventType
+}
+
+func (eh groupFileUploadEventHandler) New() interface{} {
+	return &GroupFileUpload{}
+}
+
+func (eh groupFileUploadEventHandler) Handle(s *Session, i interface{}) {
+	if t, ok := i.(*GroupFileUpload); ok {
+		eh(s, t)
+	}
+}
+
 type messageRecallEventHandler func(*Session, *MessageRecall)
 
 func (eh messageRecallEventHandler) Type() string {
@@ -254,6 +369,22 @@ func (eh friendNudgeEventHandler) Handle(s *Session, i interface{}) {
 	}
 }
 
+type friendFileUploadEventHandler func(*Session, *FriendFileUpload)
+
+func (eh friendFileUploadEventHandler) Type() string {
+	return friendFileUploadEventType
+}
+
+func (eh friendFileUploadEventHandler) New() interface{} {
+	return &FriendFileUpload{}
+}
+
+func (eh friendFileUploadEventHandler) Handle(s *Session, i interface{}) {
+	if t, ok := i.(*FriendFileUpload); ok {
+		eh(s, t)
+	}
+}
+
 func init() {
 	registerInterfaceProvider(messageReceiveEventHandler(nil))
 	registerInterfaceProvider(friendRequestEventHandler(nil))
@@ -262,9 +393,16 @@ func init() {
 	registerInterfaceProvider(groupNudgeEventHandler(nil))
 	registerInterfaceProvider(groupMuteEventHandler(nil))
 	registerInterfaceProvider(groupWholeMuteEventHandler(nil))
+	registerInterfaceProvider(groupJoinRequestEventHandler(nil))
+	registerInterfaceProvider(groupInvitedJoinRequestEventHandler(nil))
+	registerInterfaceProvider(groupAdminChangeEventHandler(nil))
+	registerInterfaceProvider(groupEssenceMessageChangeEventHandler(nil))
+	registerInterfaceProvider(groupNameChangeEventHandler(nil))
+	registerInterfaceProvider(groupFileUploadEventHandler(nil))
 	registerInterfaceProvider(groupMessageReactionEventHandler(nil))
 	registerInterfaceProvider(groupMemberIncreaseEventHandler(nil))
 	registerInterfaceProvider(groupMemberDecreaseEventHandler(nil))
 	registerInterfaceProvider(groupInvitationEventHandler(nil))
 	registerInterfaceProvider(messageRecallEventHandler(nil))
+	registerInterfaceProvider(friendFileUploadEventHandler(nil))
 }

@@ -409,6 +409,56 @@ type GroupMemberDecrease struct {
 	OperatorID int64 `json:"operator_id"` // 操作人ID
 }
 
+type GroupJoinRequest struct {
+	GroupID         int64  `json:"group_id"`
+	NotificationSeq int64  `json:"notification_seq"`
+	IsFiltered      bool   `json:"is_filtered"`
+	InitiatorID     int64  `json:"initiator_id"`
+	Comment         string `json:"comment"`
+}
+
+type GroupInvitedJoinRequest struct {
+	GroupID         int64 `json:"group_id"`
+	NotificationSeq int64 `json:"notification_seq"`
+	InitiatorID     int64 `json:"initiator_id"`
+	TargetUserID    int64 `json:"target_user_id"`
+}
+
+type GroupAdminChange struct {
+	GroupID int64 `json:"group_id"`
+	UserID  int64 `json:"user_id"`
+	IsSet   bool  `json:"is_set"`
+}
+
+type GroupEssenceMessageChange struct {
+	GroupID    int64 `json:"group_id"`
+	MessageSeq int64 `json:"message_seq"`
+	IsSet      bool  `json:"is_set"`
+}
+
+type GroupNameChange struct {
+	GroupID      int64  `json:"group_id"`
+	NewGroupName string `json:"new_group_name"`
+	OperatorID   int64  `json:"operator_id"`
+}
+
+type GroupFileUpload struct {
+	GroupID  int64  `json:"group_id"`
+	UserID   int64  `json:"user_id"`
+	FileID   string `json:"file_id"`
+	FileName string `json:"file_name"`
+	FileSize int64  `json:"file_size"`
+}
+
+type FriendFileUpload struct {
+	UserID   int64  `json:"user_id"`
+	FileID   string `json:"file_id"`
+	FileName string `json:"file_name"`
+	FileSize int64  `json:"file_size"`
+	FileHash string `json:"file_hash"`
+	IsSelf   bool   `json:"is_self"`
+}
+
 type GroupNotificationType string
 
 const (
