@@ -444,6 +444,24 @@ func (s *Session) AcceptGroupInvitation(groupID int64, invitationSeq string) err
 	return handleAPIResponse(request, &apiResponse, nil)
 }
 
+func (s *Session) GetFriendRequests(limit int32, isFiltered bool) ([]FriendRequest, error) {
+	request, err := s.Request("POST", EndpointGetFriendRequests, map[string]interface{}{
+		"limit":       limit,
+		"is_filtered": isFiltered,
+	})
+	if err != nil {
+		return nil, err
+	}
+	var apiResponse APIResponse
+	var friendRequests struct {
+		Requests []FriendRequest `json:"requests"`
+	}
+	if err = handleAPIResponse(request, &apiResponse, &friendRequests); err != nil {
+		return nil, err
+	}
+	return friendRequests.Requests, nil
+}
+
 func (s *Session) AcceptFriendRequest(initiatorUid string, isFiltered bool) error {
 	request, err := s.Request("POST", EndpointAcceptFriendRequest, map[string]interface{}{
 		"is_filtered":   isFiltered,
@@ -473,7 +491,7 @@ func (s *Session) GetMessage(messageScene string, peerID int64, messageSeq int64
 	return &receiveMessage, nil
 }
 
-func (s *Session) GetHistoryMessages(messageScene string, peerID int64, startMessageSeq int64, limit int32) (*[]ReceiveMessage, error) {
+func (s *Session) GetHistoryMessages(messageScene string, peerID int64, startMessageSeq int64, limit int32) (msg []ReceiveMessage, nextMessageSeq int64, err error) {
 	request, err := s.Request("POST", EndpointGetHistoryMessages, map[string]interface{}{
 		"message_scene":     messageScene,
 		"peer_id":           peerID,
@@ -481,14 +499,51 @@ func (s *Session) GetHistoryMessages(messageScene string, peerID int64, startMes
 		"limit":             limit,
 	})
 	if err != nil {
+		return nil, 0, err
+	}
+	var apiResponse APIResponse
+	var historyMessages struct {
+		Messages       []ReceiveMessage `json:"messages"`
+		NextMessageSeq int64            `json:"next_message_seq,omitempty"`
+	}
+	if err = handleAPIResponse(request, &apiResponse, &historyMessages); err != nil {
+		return nil, 0, err
+	}
+	return historyMessages.Messages, historyMessages.NextMessageSeq, nil
+}
+
+func (s *Session) GetResourceTempURL(resourceID string) (string, error) {
+	request, err := s.Request("POST", EndpointGetResourceTempURL, map[string]interface{}{
+		"resource_id": resourceID,
+	})
+	if err != nil {
+		return "", err
+	}
+	var apiResponse APIResponse
+	var tempURLResponse struct {
+		URL string `json:"url"`
+	}
+	if err = handleAPIResponse(request, &apiResponse, &tempURLResponse); err != nil {
+		return "", err
+	}
+	return tempURLResponse.URL, nil
+}
+
+func (s *Session) GetForwardedMessages(forwardID string) ([]ReceiveMessage, error) {
+	request, err := s.Request("POST", EndpointGetForwardedMessages, map[string]interface{}{
+		"forward_id": forwardID,
+	})
+	if err != nil {
 		return nil, err
 	}
 	var apiResponse APIResponse
-	var historyMessages []ReceiveMessage
-	if err = handleAPIResponse(request, &apiResponse, &historyMessages); err != nil {
+	var forwardedMessages struct {
+		Messages []ReceiveMessage `json:"messages"`
+	}
+	if err = handleAPIResponse(request, &apiResponse, &forwardedMessages); err != nil {
 		return nil, err
 	}
-	return &historyMessages, nil
+	return forwardedMessages.Messages, nil
 }
 
 func (s *Session) SendFriendNudge(userID int64, isSelf bool) error {

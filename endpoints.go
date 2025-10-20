@@ -46,6 +46,7 @@ const (
 
 	EndpointSendFriendNudge     = "send_friend_nudge"
 	EndpointSendProfileLike     = "send_profile_like"
+	EndpointGetFriendRequests   = "get_friend_requests"
 	EndpointAcceptFriendRequest = "accept_friend_request"
 	EndpointRejectFriendRequest = "reject_friend_request"
 
@@ -72,7 +73,6 @@ const (
 	EndpointAcceptGroupRequest         = "accept_group_request"
 	EndpointRejectGroupRequest         = "reject_group_request"
 	EndpointGetGroupNotifications      = "get_group_notifications"
-	EndpointGetFriendRequests          = "get_friend_requests"
 	EndpointGetGroupRequests           = "get_group_requests"
 	EndpointGetGroupInvitations        = "get_group_invitations"
 

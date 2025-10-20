@@ -35,8 +35,8 @@ Ref:
 - [x] /send_group_message
 - [x] /get_message
 - [x] /get_history_messages
-- [ ] /get_resource_temp_url
-- [ ] /get_forwarded_messages
+- [x] /get_resource_temp_url
+- [x] /get_forwarded_messages
 - [ ] /recall_private_message
 - [ ] /recall_group_message
 - [ ] /mark_message_as_read
@@ -45,7 +45,7 @@ Ref:
 
 - [x] /send_friend_nudge
 - [x] /send_profile_like
-- [ ] /get_friend_requests
+- [x] /get_friend_requests
 - [x] /accept_friend_request
 - [ ] /reject_friend_request
 
