@@ -37,9 +37,9 @@ Ref:
 - [x] /get_history_messages
 - [x] /get_resource_temp_url
 - [x] /get_forwarded_messages
-- [ ] /recall_private_message
-- [ ] /recall_group_message
-- [ ] /mark_message_as_read
+- [x] /recall_private_message
+- [x] /recall_group_message
+- [x] /mark_message_as_read
 
 #### friend
 
@@ -47,45 +47,45 @@ Ref:
 - [x] /send_profile_like
 - [x] /get_friend_requests
 - [x] /accept_friend_request
-- [ ] /reject_friend_request
+- [x] /reject_friend_request
 
 #### group
 
-- [ ] /set_group_name
-- [ ] /set_group_avatar
+- [x] /set_group_name
+- [x] /set_group_avatar
 - [x] /set_group_member_card
-- [ ] /set_group_member_special_title
-- [ ] /set_group_member_admin
-- [ ] /set_group_member_mute
-- [ ] /set_group_whole_mute
-- [ ] /kick_group_member
-- [ ] /get_group_announcement_list
-- [ ] /send_group_announcement
-- [ ] /delete_group_announcement
-- [ ] /get_group_essence_messages
-- [ ] /set_group_essence_message
+- [x] /set_group_member_special_title
+- [x] /set_group_member_admin
+- [x] /set_group_member_mute
+- [x] /set_group_whole_mute
+- [x] /kick_group_member
+- [x] /get_group_announcement_list
+- [x] /send_group_announcement
+- [x] /delete_group_announcement
+- [x] /get_group_essence_messages
+- [x] /set_group_essence_message
 - [x] /quit_group
-- [ ] /send_group_message_reaction
+- [x] /send_group_message_reaction
 - [x] /send_group_nudge
-- [ ] /get_group_notifications
-- [ ] /accept_group_request
-- [ ] /reject_group_request
+- [x] /get_group_notifications
+- [x] /accept_group_request
+- [x] /reject_group_request
 - [x] /accept_group_invitation
-- [ ] /reject_group_invitation
+- [x] /reject_group_invitation
 
 #### file
 
-- [ ] /upload_private_file
+- [x] /upload_private_file
 - [x] /upload_group_file
-- [ ] /get_private_file_download_url
-- [ ] /get_group_file_download_url
-- [ ] /get_group_files
-- [ ] /move_group_file
-- [ ] /rename_group_file
-- [ ] /delete_group_file
-- [ ] /create_group_folder
-- [ ] /rename_group_folder
-- [ ] /delete_group_folder
+- [x] /get_private_file_download_url
+- [x] /get_group_file_download_url
+- [x] /get_group_files
+- [x] /move_group_file
+- [x] /rename_group_file
+- [x] /delete_group_file
+- [x] /create_group_folder
+- [x] /rename_group_folder
+- [x] /delete_group_folder
 
 ### event
 

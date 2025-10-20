@@ -41,6 +41,7 @@ const (
 	EndpointGetForwardedMessages = "get_forwarded_messages"
 	EndpointRecallPrivateMessage = "recall_private_message"
 	EndpointRecallGroupMessage   = "recall_group_message"
+	EndpointMarkMessageAsRead    = "mark_message_as_read"
 
 	// EndpointSendFriendNudge Friend
 
@@ -56,11 +57,11 @@ const (
 	EndpointSetGroupAvatar             = "set_group_avatar"
 	EndpointSetGroupMemberCard         = "set_group_member_card"
 	EndpointSetGroupMemberSpecialTitle = "set_group_member_special_title"
-	EndpointSetGroupAdmin              = "set_group_admin"
+	EndpointSetGroupMemberAdmin        = "set_group_member_admin"
 	EndpointSetGroupMemberMute         = "set_group_member_mute"
 	EndpointSetGroupWholeMute          = "set_group_whole_mute"
 	EndpointKickGroupMember            = "kick_group_member"
-	EndpointGetGroupAnnouncements      = "get_group_announcements"
+	EndpointGetGroupAnnouncementList   = "get_group_announcement_list"
 	EndpointSendGroupAnnouncement      = "send_group_announcement"
 	EndpointDeleteGroupAnnouncement    = "delete_group_announcement"
 	EndpointGetGroupEssenceMessages    = "get_group_essence_messages"
@@ -73,8 +74,6 @@ const (
 	EndpointAcceptGroupRequest         = "accept_group_request"
 	EndpointRejectGroupRequest         = "reject_group_request"
 	EndpointGetGroupNotifications      = "get_group_notifications"
-	EndpointGetGroupRequests           = "get_group_requests"
-	EndpointGetGroupInvitations        = "get_group_invitations"
 
 	// EndpointUploadPrivateFile File
 

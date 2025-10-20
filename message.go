@@ -9,27 +9,27 @@ type (
 	}
 
 	IMessageElement interface {
-		Type() ElementType
+		Type() MessageElementType
 		MarshalJSON() ([]byte, error)
 	}
 
-	ElementType string
+	MessageElementType string
 )
 
 // Copied from sealdice/sealdice-core
 const (
-	Text       ElementType = "text"        // 文本
-	At         ElementType = "mention"     // 艾特
-	AtAll      ElementType = "mention_all" // 艾特全体
-	Video      ElementType = "video"       // 视频
-	Image      ElementType = "image"       // 图片
-	Reply      ElementType = "reply"       // 回复
-	Record     ElementType = "record"      // 语音
-	Face       ElementType = "face"        // 表情
-	Forward    ElementType = "forward"     // 转发
-	MarketFace ElementType = "market_face" // 市场表情
-	LightApp   ElementType = "light_app"   // 小程序
-	XML        ElementType = "xml"         // XML
+	Text       MessageElementType = "text"        // 文本
+	At         MessageElementType = "mention"     // 艾特
+	AtAll      MessageElementType = "mention_all" // 艾特全体
+	Video      MessageElementType = "video"       // 视频
+	Image      MessageElementType = "image"       // 图片
+	Reply      MessageElementType = "reply"       // 回复
+	Record     MessageElementType = "record"      // 语音
+	Face       MessageElementType = "face"        // 表情
+	Forward    MessageElementType = "forward"     // 转发
+	MarketFace MessageElementType = "market_face" // 市场表情
+	LightApp   MessageElementType = "light_app"   // 小程序
+	XML        MessageElementType = "xml"         // XML
 )
 
 const maxFileSize = 1024 * 1024 * 50 // 50MB
@@ -41,13 +41,13 @@ type TextElement struct {
 	Text string `json:"text"`
 }
 
-func (t *TextElement) Type() ElementType {
+func (t *TextElement) Type() MessageElementType {
 	return Text
 }
 
 func (t *TextElement) MarshalJSON() ([]byte, error) {
 	return json.Marshal(&struct {
-		Type ElementType `json:"type"`
+		Type MessageElementType `json:"type"`
 		Data struct {
 			Text string `json:"text"` // 文本内容
 		} `json:"data"`
@@ -66,13 +66,13 @@ type AtElement struct {
 	UserID int64 `json:"user_id"`
 }
 
-func (t *AtElement) Type() ElementType {
+func (t *AtElement) Type() MessageElementType {
 	return At
 }
 
 func (t *AtElement) MarshalJSON() ([]byte, error) {
 	return json.Marshal(&struct {
-		Type ElementType `json:"type"`
+		Type MessageElementType `json:"type"`
 		Data struct {
 			UserID int64 `json:"user_id"`
 		} `json:"data"`
@@ -88,14 +88,14 @@ func (t *AtElement) MarshalJSON() ([]byte, error) {
 
 type AtAllElement struct{}
 
-func (t *AtAllElement) Type() ElementType {
+func (t *AtAllElement) Type() MessageElementType {
 	return AtAll
 }
 
 func (t *AtAllElement) MarshalJSON() ([]byte, error) {
 	return json.Marshal(&struct {
-		Type ElementType `json:"type"`
-		Data struct{}    `json:"data"`
+		Type MessageElementType `json:"type"`
+		Data struct{}           `json:"data"`
 	}{
 		Type: t.Type(),
 		Data: struct{}{},
@@ -107,13 +107,13 @@ type ReplyElement struct {
 	MessageSeq int64 `json:"message_seq"` // 回复的目标消息ID
 }
 
-func (t *ReplyElement) Type() ElementType {
+func (t *ReplyElement) Type() MessageElementType {
 	return Reply
 }
 
 func (t *ReplyElement) MarshalJSON() ([]byte, error) {
 	return json.Marshal(&struct {
-		Type ElementType `json:"type"`
+		Type MessageElementType `json:"type"`
 		Data struct {
 			MessageSeq int64 `json:"message_seq"`
 		} `json:"data"`
@@ -140,13 +140,13 @@ type ImageElement struct {
 	Height     int32  `json:"height"`
 }
 
-func (l *ImageElement) Type() ElementType {
+func (l *ImageElement) Type() MessageElementType {
 	return Image
 }
 
 func (l *ImageElement) MarshalJSON() ([]byte, error) {
 	return json.Marshal(&struct {
-		Type ElementType `json:"type"`
+		Type MessageElementType `json:"type"`
 		Data struct {
 			URI     string `json:"uri"`
 			Summary string `json:"summary"`
@@ -175,13 +175,13 @@ type RecordElement struct {
 	Duration   int32  `json:"duration"`
 }
 
-func (r *RecordElement) Type() ElementType {
+func (r *RecordElement) Type() MessageElementType {
 	return Record
 }
 
 func (r *RecordElement) MarshalJSON() ([]byte, error) {
 	return json.Marshal(&struct {
-		Type ElementType `json:"type"`
+		Type MessageElementType `json:"type"`
 		Data struct {
 			URI string `json:"uri"`
 		} `json:"data"`
@@ -207,13 +207,13 @@ type VideoElement struct {
 	Duration   int32  `json:"duration"`
 }
 
-func (v *VideoElement) Type() ElementType {
+func (v *VideoElement) Type() MessageElementType {
 	return Video
 }
 
 func (v *VideoElement) MarshalJSON() ([]byte, error) {
 	return json.Marshal(&struct {
-		Type ElementType `json:"type"`
+		Type MessageElementType `json:"type"`
 		Data struct {
 			URI      string `json:"uri"`
 			ThumbURI string `json:"thumb_uri"`
@@ -235,13 +235,13 @@ type FaceElement struct {
 	FaceID string `json:"face_id"`
 }
 
-func (f *FaceElement) Type() ElementType {
+func (f *FaceElement) Type() MessageElementType {
 	return Face
 }
 
 func (f *FaceElement) MarshalJSON() ([]byte, error) {
 	return json.Marshal(&struct {
-		Type ElementType `json:"type"`
+		Type MessageElementType `json:"type"`
 		Data struct {
 			FaceID string `json:"face_id"`
 		} `json:"data"`
@@ -268,13 +268,13 @@ type ForwardElement struct {
 	Messages []OutgoingForwardedMessage `json:"messages"`
 }
 
-func (f *ForwardElement) Type() ElementType {
+func (f *ForwardElement) Type() MessageElementType {
 	return Forward
 }
 
 func (f *ForwardElement) MarshalJSON() ([]byte, error) {
 	return json.Marshal(&struct {
-		Type ElementType `json:"type"`
+		Type MessageElementType `json:"type"`
 		Data struct {
 			Messages []OutgoingForwardedMessage `json:"messages"`
 		} `json:"data"`
@@ -294,7 +294,7 @@ type MarketFaceElement struct {
 	URL string `json:"url"`
 }
 
-func (m *MarketFaceElement) Type() ElementType {
+func (m *MarketFaceElement) Type() MessageElementType {
 	return MarketFace
 }
 
@@ -307,7 +307,7 @@ type LightAppElement struct {
 	JSONPayload string `json:"json_payload"`
 }
 
-func (l *LightAppElement) Type() ElementType {
+func (l *LightAppElement) Type() MessageElementType {
 	return LightApp
 }
 
@@ -319,7 +319,7 @@ type XmlElement struct {
 	XML string `json:"xml"`
 }
 
-func (x *XmlElement) Type() ElementType {
+func (x *XmlElement) Type() MessageElementType {
 	return XML
 }
 

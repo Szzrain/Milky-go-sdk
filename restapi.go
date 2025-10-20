@@ -432,48 +432,6 @@ func (s *Session) SendPrivateMessage(userID int64, message *[]IMessageElement) (
 	return &messageRet, nil
 }
 
-func (s *Session) AcceptGroupInvitation(groupID int64, invitationSeq string) error {
-	request, err := s.Request("POST", EndpointAcceptGroupInvitation, map[string]interface{}{
-		"group_id":       groupID,
-		"invitation_seq": invitationSeq,
-	})
-	if err != nil {
-		return err
-	}
-	var apiResponse APIResponse
-	return handleAPIResponse(request, &apiResponse, nil)
-}
-
-func (s *Session) GetFriendRequests(limit int32, isFiltered bool) ([]FriendRequest, error) {
-	request, err := s.Request("POST", EndpointGetFriendRequests, map[string]interface{}{
-		"limit":       limit,
-		"is_filtered": isFiltered,
-	})
-	if err != nil {
-		return nil, err
-	}
-	var apiResponse APIResponse
-	var friendRequests struct {
-		Requests []FriendRequest `json:"requests"`
-	}
-	if err = handleAPIResponse(request, &apiResponse, &friendRequests); err != nil {
-		return nil, err
-	}
-	return friendRequests.Requests, nil
-}
-
-func (s *Session) AcceptFriendRequest(initiatorUid string, isFiltered bool) error {
-	request, err := s.Request("POST", EndpointAcceptFriendRequest, map[string]interface{}{
-		"is_filtered":   isFiltered,
-		"initiator_uid": initiatorUid,
-	})
-	if err != nil {
-		return err
-	}
-	var apiResponse APIResponse
-	return handleAPIResponse(request, &apiResponse, nil)
-}
-
 func (s *Session) GetMessage(messageScene string, peerID int64, messageSeq int64) (*ReceiveMessage, error) {
 	request, err := s.Request("POST", EndpointGetMessage, map[string]interface{}{
 		"message_scene": messageScene,
@@ -546,6 +504,43 @@ func (s *Session) GetForwardedMessages(forwardID string) ([]ReceiveMessage, erro
 	return forwardedMessages.Messages, nil
 }
 
+func (s *Session) RecallPrivateMessage(userID int64, messageSeq int64) error {
+	request, err := s.Request("POST", EndpointRecallPrivateMessage, map[string]interface{}{
+		"user_id":     userID,
+		"message_seq": messageSeq,
+	})
+	if err != nil {
+		return err
+	}
+	var apiResponse APIResponse
+	return handleAPIResponse(request, &apiResponse, nil)
+}
+
+func (s *Session) RecallGroupMessage(groupID int64, messageSeq int64) error {
+	request, err := s.Request("POST", EndpointRecallGroupMessage, map[string]interface{}{
+		"group_id":    groupID,
+		"message_seq": messageSeq,
+	})
+	if err != nil {
+		return err
+	}
+	var apiResponse APIResponse
+	return handleAPIResponse(request, &apiResponse, nil)
+}
+
+func (s *Session) MarkMessageAsRead(messageScene string, peerID int64, messageSeq int64) error {
+	request, err := s.Request("POST", EndpointMarkMessageAsRead, map[string]interface{}{
+		"message_scene": messageScene,
+		"peer_id":       peerID,
+		"message_seq":   messageSeq,
+	})
+	if err != nil {
+		return err
+	}
+	var apiResponse APIResponse
+	return handleAPIResponse(request, &apiResponse, nil)
+}
+
 func (s *Session) SendFriendNudge(userID int64, isSelf bool) error {
 	request, err := s.Request("POST", EndpointSendFriendNudge, map[string]interface{}{
 		"user_id": userID,
@@ -570,9 +565,28 @@ func (s *Session) SendProfileLike(userID int64, count int32) error {
 	return handleAPIResponse(request, &apiResponse, nil)
 }
 
-func (s *Session) QuitGroup(groupID int64) error {
-	request, err := s.Request("POST", EndpointQuitGroup, map[string]interface{}{
-		"group_id": groupID,
+func (s *Session) GetFriendRequests(limit int32, isFiltered bool) ([]FriendRequest, error) {
+	request, err := s.Request("POST", EndpointGetFriendRequests, map[string]interface{}{
+		"limit":       limit,
+		"is_filtered": isFiltered,
+	})
+	if err != nil {
+		return nil, err
+	}
+	var apiResponse APIResponse
+	var friendRequests struct {
+		Requests []FriendRequest `json:"requests"`
+	}
+	if err = handleAPIResponse(request, &apiResponse, &friendRequests); err != nil {
+		return nil, err
+	}
+	return friendRequests.Requests, nil
+}
+
+func (s *Session) AcceptFriendRequest(initiatorUid string, isFiltered bool) error {
+	request, err := s.Request("POST", EndpointAcceptFriendRequest, map[string]interface{}{
+		"is_filtered":   isFiltered,
+		"initiator_uid": initiatorUid,
 	})
 	if err != nil {
 		return err
@@ -581,10 +595,11 @@ func (s *Session) QuitGroup(groupID int64) error {
 	return handleAPIResponse(request, &apiResponse, nil)
 }
 
-func (s *Session) SendGroupNudge(groupID int64, userID int64) error {
-	request, err := s.Request("POST", EndpointSendGroupNudge, map[string]interface{}{
-		"group_id": groupID,
-		"user_id":  userID,
+func (s *Session) RejectFriendRequest(initiatorUid string, isFiltered bool, reason string) error {
+	request, err := s.Request("POST", EndpointRejectFriendRequest, map[string]interface{}{
+		"initiator_uid": initiatorUid,
+		"is_filtered":   isFiltered,
+		"reason":        reason,
 	})
 	if err != nil {
 		return err
@@ -593,10 +608,22 @@ func (s *Session) SendGroupNudge(groupID int64, userID int64) error {
 	return handleAPIResponse(request, &apiResponse, nil)
 }
 
-func (s *Session) SetGroupName(groupID int64, name string) error {
+func (s *Session) SetGroupName(groupID int64, newGroupName string) error {
 	request, err := s.Request("POST", EndpointSetGroupName, map[string]interface{}{
-		"group_id": groupID,
-		"name":     name,
+		"group_id":       groupID,
+		"new_group_name": newGroupName,
+	})
+	if err != nil {
+		return err
+	}
+	var apiResponse APIResponse
+	return handleAPIResponse(request, &apiResponse, nil)
+}
+
+func (s *Session) SetGroupAvatar(groupID int64, imageURI string) error {
+	request, err := s.Request("POST", EndpointSetGroupAvatar, map[string]interface{}{
+		"group_id":  groupID,
+		"image_uri": imageURI,
 	})
 	if err != nil {
 		return err
@@ -631,11 +658,11 @@ func (s *Session) SetGroupMemberSpecialTitle(groupID int64, userID int64, specia
 	return handleAPIResponse(request, &apiResponse, nil)
 }
 
-func (s *Session) SetGroupAdmin(groupID int64, userID int64, isSet bool) error {
-	request, err := s.Request("POST", EndpointSetGroupAdmin, map[string]interface{}{
+func (s *Session) SetGroupMemberAdmin(groupID int64, userID int64, isSet bool) error {
+	request, err := s.Request("POST", EndpointSetGroupMemberAdmin, map[string]interface{}{
 		"group_id": groupID,
 		"user_id":  userID,
-		"is_admin": isSet,
+		"is_set":   isSet,
 	})
 	if err != nil {
 		return err
@@ -644,7 +671,7 @@ func (s *Session) SetGroupAdmin(groupID int64, userID int64, isSet bool) error {
 	return handleAPIResponse(request, &apiResponse, nil)
 }
 
-func (s *Session) SetGroupMemberMute(groupID int64, userID int64, duration int64) error {
+func (s *Session) SetGroupMemberMute(groupID int64, userID int64, duration int32) error {
 	request, err := s.Request("POST", EndpointSetGroupMemberMute, map[string]interface{}{
 		"group_id": groupID,
 		"user_id":  userID,
@@ -682,6 +709,218 @@ func (s *Session) KickGroupMember(groupID int64, userID int64, rejectAddRequest 
 	return handleAPIResponse(request, &apiResponse, nil)
 }
 
+func (s *Session) GetGroupAnnouncementList(groupID int64) ([]GroupAnnouncement, error) {
+	request, err := s.Request("POST", EndpointGetGroupAnnouncementList, map[string]interface{}{
+		"group_id": groupID,
+	})
+	if err != nil {
+		return nil, err
+	}
+	var apiResponse APIResponse
+	var announcementsResponse struct {
+		Announcements []GroupAnnouncement `json:"announcements"`
+	}
+	if err = handleAPIResponse(request, &apiResponse, &announcementsResponse); err != nil {
+		return nil, err
+	}
+	return announcementsResponse.Announcements, nil
+}
+
+func (s *Session) SendGroupAnnouncement(groupID int64, content string, imageURL string) error {
+	request, err := s.Request("POST", EndpointSendGroupAnnouncement, map[string]interface{}{
+		"group_id":  groupID,
+		"content":   content,
+		"image_url": imageURL,
+	})
+	if err != nil {
+		return err
+	}
+	var apiResponse APIResponse
+	return handleAPIResponse(request, &apiResponse, nil)
+}
+
+func (s *Session) DeleteGroupAnnouncement(groupID int64, announcementID string) error {
+	request, err := s.Request("POST", EndpointDeleteGroupAnnouncement, map[string]interface{}{
+		"group_id":        groupID,
+		"announcement_id": announcementID,
+	})
+	if err != nil {
+		return err
+	}
+	var apiResponse APIResponse
+	return handleAPIResponse(request, &apiResponse, nil)
+}
+
+func (s *Session) GetGroupEssenceMessages(groupID int64, pageIndex int32, pageSize int32) (message []GroupEssenceMessage, isEnd bool, err error) {
+	request, err := s.Request("POST", EndpointGetGroupEssenceMessages, map[string]interface{}{
+		"group_id":   groupID,
+		"page_index": pageIndex,
+		"page_size":  pageSize,
+	})
+	if err != nil {
+		return nil, false, err
+	}
+	var apiResponse APIResponse
+	var essenceMessagesResponse struct {
+		Messages []GroupEssenceMessage `json:"messages"`
+		IsEnd    bool                  `json:"is_end"`
+	}
+	if err = handleAPIResponse(request, &apiResponse, &essenceMessagesResponse); err != nil {
+		return nil, false, err
+	}
+	return essenceMessagesResponse.Messages, essenceMessagesResponse.IsEnd, nil
+}
+
+func (s *Session) SetGroupEssenceMessage(groupID int64, messageSeq int64, isSet bool) error {
+	request, err := s.Request("POST", EndpointSetGroupEssenceMessage, map[string]interface{}{
+		"group_id":    groupID,
+		"message_seq": messageSeq,
+		"is_set":      isSet,
+	})
+	if err != nil {
+		return err
+	}
+	var apiResponse APIResponse
+	return handleAPIResponse(request, &apiResponse, nil)
+}
+
+func (s *Session) QuitGroup(groupID int64) error {
+	request, err := s.Request("POST", EndpointQuitGroup, map[string]interface{}{
+		"group_id": groupID,
+	})
+	if err != nil {
+		return err
+	}
+	var apiResponse APIResponse
+	return handleAPIResponse(request, &apiResponse, nil)
+}
+
+func (s *Session) SendGroupMessageReaction(groupID int64, messageSeq int64, reaction string, isSet bool) error {
+	request, err := s.Request("POST", EndpointSendGroupMessageReaction, map[string]interface{}{
+		"group_id":    groupID,
+		"message_seq": messageSeq,
+		"reaction":    reaction,
+		"is_set":      isSet,
+	})
+	if err != nil {
+		return err
+	}
+	var apiResponse APIResponse
+	return handleAPIResponse(request, &apiResponse, nil)
+}
+
+func (s *Session) SendGroupNudge(groupID int64, userID int64) error {
+	request, err := s.Request("POST", EndpointSendGroupNudge, map[string]interface{}{
+		"group_id": groupID,
+		"user_id":  userID,
+	})
+	if err != nil {
+		return err
+	}
+	var apiResponse APIResponse
+	return handleAPIResponse(request, &apiResponse, nil)
+}
+
+func (s *Session) GetGroupNotifications(startNotificationSeq int64, isFiltered bool, limit int32) (notifications []interface{}, nextNotificationSeq int64, err error) {
+	request, err := s.Request("POST", EndpointGetGroupNotifications, map[string]interface{}{
+		"start_notification_seq": startNotificationSeq,
+		"is_filtered":            isFiltered,
+		"limit":                  limit,
+	})
+	if err != nil {
+		return nil, 0, err
+	}
+	var apiResponse APIResponse
+	var notificationsResponse struct {
+		Notifications       []json.RawMessage `json:"notifications"`
+		NextNotificationSeq int64             `json:"next_notification_seq,omitempty"`
+	}
+	if err = handleAPIResponse(request, &apiResponse, &notificationsResponse); err != nil {
+		return nil, 0, err
+	}
+	var notifSlice []interface{}
+	for _, rawNotif := range notificationsResponse.Notifications {
+		notification, err := UnmarshalGroupNotification(rawNotif)
+		if err != nil {
+			return nil, 0, err
+		}
+		notifSlice = append(notifSlice, notification)
+	}
+	return notifSlice, notificationsResponse.NextNotificationSeq, nil
+}
+
+func (s *Session) AcceptGroupRequest(notificationSeq int64, notificationType string, groupID int64, isFiltered bool) error {
+	request, err := s.Request("POST", EndpointAcceptGroupRequest, map[string]interface{}{
+		"notification_seq":  notificationSeq,
+		"notification_type": notificationType,
+		"group_id":          groupID,
+		"is_filtered":       isFiltered,
+	})
+	if err != nil {
+		return err
+	}
+	var apiResponse APIResponse
+	return handleAPIResponse(request, &apiResponse, nil)
+}
+
+func (s *Session) RejectGroupRequest(notificationSeq int64, notificationType string, groupID int64, isFiltered bool, reason string) error {
+	request, err := s.Request("POST", EndpointRejectGroupRequest, map[string]interface{}{
+		"notification_seq":  notificationSeq,
+		"notification_type": notificationType,
+		"group_id":          groupID,
+		"is_filtered":       isFiltered,
+		"reason":            reason,
+	})
+	if err != nil {
+		return err
+	}
+	var apiResponse APIResponse
+	return handleAPIResponse(request, &apiResponse, nil)
+}
+
+func (s *Session) AcceptGroupInvitation(groupID int64, invitationSeq string) error {
+	request, err := s.Request("POST", EndpointAcceptGroupInvitation, map[string]interface{}{
+		"group_id":       groupID,
+		"invitation_seq": invitationSeq,
+	})
+	if err != nil {
+		return err
+	}
+	var apiResponse APIResponse
+	return handleAPIResponse(request, &apiResponse, nil)
+}
+
+func (s *Session) RejectGroupInvitation(groupID int64, invitationSeq string) error {
+	request, err := s.Request("POST", EndpointRejectGroupInvitation, map[string]interface{}{
+		"group_id":       groupID,
+		"invitation_seq": invitationSeq,
+	})
+	if err != nil {
+		return err
+	}
+	var apiResponse APIResponse
+	return handleAPIResponse(request, &apiResponse, nil)
+}
+
+func (s *Session) UploadPrivateFile(userID int64, fileURI string, fileName string) (string, error) {
+	request, err := s.Request("POST", EndpointUploadPrivateFile, map[string]interface{}{
+		"user_id":   userID,
+		"file_uri":  fileURI,
+		"file_name": fileName,
+	})
+	if err != nil {
+		return "", err
+	}
+	var apiResponse APIResponse
+	var uploadFileResponse struct {
+		FileID string `json:"file_id"`
+	}
+	if err = handleAPIResponse(request, &apiResponse, &uploadFileResponse); err != nil {
+		return "", err
+	}
+	return uploadFileResponse.FileID, nil
+}
+
 func (s *Session) UploadGroupFile(groupID int64, fileURI string, fileName string, parentFolderID string) (string, error) {
 	request, err := s.Request("POST", EndpointUploadGroupFile, map[string]interface{}{
 		"group_id":         groupID,
@@ -702,6 +941,25 @@ func (s *Session) UploadGroupFile(groupID int64, fileURI string, fileName string
 	return uploadFileResponse.FileID, nil
 }
 
+func (s *Session) GetPrivateFileDownloadURL(userID int64, fileID string, fileHash string) (string, error) {
+	request, err := s.Request("POST", EndpointGetPrivateFileDownloadURL, map[string]interface{}{
+		"user_id":   userID,
+		"file_id":   fileID,
+		"file_hash": fileHash,
+	})
+	if err != nil {
+		return "", err
+	}
+	var apiResponse APIResponse
+	var downloadURLResponse struct {
+		DownloadURL string `json:"download_url"`
+	}
+	if err = handleAPIResponse(request, &apiResponse, &downloadURLResponse); err != nil {
+		return "", err
+	}
+	return downloadURLResponse.DownloadURL, nil
+}
+
 func (s *Session) GetGroupFileDownloadURL(groupID int64, fileID string) (string, error) {
 	request, err := s.Request("POST", EndpointGetGroupFileDownloadURL, map[string]interface{}{
 		"group_id": groupID,
@@ -720,10 +978,100 @@ func (s *Session) GetGroupFileDownloadURL(groupID int64, fileID string) (string,
 	return downloadURLResponse.DownloadURL, nil
 }
 
+func (s *Session) GetGroupFiles(groupID int64, parentFolderID string) ([]GroupFile, []GroupFolder, error) {
+	request, err := s.Request("POST", EndpointGetGroupFiles, map[string]interface{}{
+		"group_id":         groupID,
+		"parent_folder_id": parentFolderID,
+	})
+	if err != nil {
+		return nil, nil, err
+	}
+	var apiResponse APIResponse
+	var groupFilesResponse struct {
+		Files   []GroupFile   `json:"files"`
+		Folders []GroupFolder `json:"folders"`
+	}
+	if err = handleAPIResponse(request, &apiResponse, &groupFilesResponse); err != nil {
+		return nil, nil, err
+	}
+	return groupFilesResponse.Files, groupFilesResponse.Folders, nil
+}
+
+func (s *Session) MoveGroupFile(groupID int64, fileID string, parentFolderID string, targetFolderID string) error {
+	request, err := s.Request("POST", EndpointMoveGroupFile, map[string]interface{}{
+		"group_id":         groupID,
+		"file_id":          fileID,
+		"parent_folder_id": parentFolderID,
+		"target_folder_id": targetFolderID,
+	})
+	if err != nil {
+		return err
+	}
+	var apiResponse APIResponse
+	return handleAPIResponse(request, &apiResponse, nil)
+}
+
+func (s *Session) RenameGroupFile(groupID int64, fileID string, parentFolderID string, newFileName string) error {
+	request, err := s.Request("POST", EndpointRenameGroupFile, map[string]interface{}{
+		"group_id":         groupID,
+		"file_id":          fileID,
+		"parent_folder_id": parentFolderID,
+		"new_file_name":    newFileName,
+	})
+	if err != nil {
+		return err
+	}
+	var apiResponse APIResponse
+	return handleAPIResponse(request, &apiResponse, nil)
+}
+
 func (s *Session) DeleteGroupFile(groupID int64, fileID string) error {
 	request, err := s.Request("POST", EndpointDeleteGroupFile, map[string]interface{}{
 		"group_id": groupID,
 		"file_id":  fileID,
+	})
+	if err != nil {
+		return err
+	}
+	var apiResponse APIResponse
+	return handleAPIResponse(request, &apiResponse, nil)
+}
+
+func (s *Session) CreateGroupFolder(groupID int64, folderName string) (string, error) {
+	request, err := s.Request("POST", EndpointCreateGroupFolder, map[string]interface{}{
+		"group_id":    groupID,
+		"folder_name": folderName,
+	})
+	if err != nil {
+		return "", err
+	}
+	var apiResponse APIResponse
+	var createFolderResponse struct {
+		FolderID string `json:"folder_id"`
+	}
+	if err = handleAPIResponse(request, &apiResponse, &createFolderResponse); err != nil {
+		return "", err
+	}
+	return createFolderResponse.FolderID, nil
+}
+
+func (s *Session) RenameGroupFolder(groupID int64, folderID string, newFolderName string) error {
+	request, err := s.Request("POST", EndpointRenameGroupFolder, map[string]interface{}{
+		"group_id":        groupID,
+		"folder_id":       folderID,
+		"new_folder_name": newFolderName,
+	})
+	if err != nil {
+		return err
+	}
+	var apiResponse APIResponse
+	return handleAPIResponse(request, &apiResponse, nil)
+}
+
+func (s *Session) DeleteGroupFolder(groupID int64, folderID string) error {
+	request, err := s.Request("POST", EndpointDeleteGroupFolder, map[string]interface{}{
+		"group_id":  groupID,
+		"folder_id": folderID,
 	})
 	if err != nil {
 		return err

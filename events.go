@@ -30,6 +30,93 @@ type MessageRet struct {
 	Time       int64 `json:"time"`
 }
 
+func UnmarshalIMessageElements(data json.RawMessage) ([]IMessageElement, error) {
+	var elements []RawMessageElement
+	var r []IMessageElement
+	if err := json.Unmarshal(data, &elements); err != nil {
+		return nil, err
+	}
+	for _, element := range elements {
+		switch element.Type {
+		case string(Text):
+			var textElement TextElement
+			if err := json.Unmarshal(element.Data, &textElement); err != nil {
+				return nil, err
+			}
+			r = append(r, &textElement)
+		case string(At):
+			var atElement AtElement
+			if err := json.Unmarshal(element.Data, &atElement); err != nil {
+				return nil, err
+			}
+			r = append(r, &atElement)
+		case string(AtAll):
+			var atAllElement AtAllElement
+			if err := json.Unmarshal(element.Data, &atAllElement); err != nil {
+				return nil, err
+			}
+			r = append(r, &atAllElement)
+		case string(Image):
+			var imageElement ImageElement
+			if err := json.Unmarshal(element.Data, &imageElement); err != nil {
+				return nil, err
+			}
+			r = append(r, &imageElement)
+		case string(Record):
+			var recordElement RecordElement
+			if err := json.Unmarshal(element.Data, &recordElement); err != nil {
+				return nil, err
+			}
+			r = append(r, &recordElement)
+		case string(Video):
+			var videoElement VideoElement
+			if err := json.Unmarshal(element.Data, &videoElement); err != nil {
+				return nil, err
+			}
+			r = append(r, &videoElement)
+		case string(Face):
+			var faceElement FaceElement
+			if err := json.Unmarshal(element.Data, &faceElement); err != nil {
+				return nil, err
+			}
+			r = append(r, &faceElement)
+		case string(Reply):
+			var replyElement ReplyElement
+			if err := json.Unmarshal(element.Data, &replyElement); err != nil {
+				return nil, err
+			}
+			r = append(r, &replyElement)
+		case string(Forward):
+			var forwardElement ForwardElement
+			if err := json.Unmarshal(element.Data, &forwardElement); err != nil {
+				return nil, err
+			}
+			r = append(r, &forwardElement)
+		case string(MarketFace):
+			var marketFaceElement MarketFaceElement
+			if err := json.Unmarshal(element.Data, &marketFaceElement); err != nil {
+				return nil, err
+			}
+			r = append(r, &marketFaceElement)
+		case string(LightApp):
+			var lightAppElement LightAppElement
+			if err := json.Unmarshal(element.Data, &lightAppElement); err != nil {
+				return nil, err
+			}
+			r = append(r, &lightAppElement)
+		case string(XML):
+			var xmlElement XmlElement
+			if err := json.Unmarshal(element.Data, &xmlElement); err != nil {
+				return nil, err
+			}
+			r = append(r, &xmlElement)
+		default:
+			continue // Ignore unknown types.
+		}
+	}
+	return r, nil
+}
+
 func (r *ReceiveMessage) UnmarshalJSON(data []byte) error {
 	raw := map[string]json.RawMessage{}
 	if err := json.Unmarshal(data, &raw); err != nil {
@@ -72,88 +159,11 @@ func (r *ReceiveMessage) UnmarshalJSON(data []byte) error {
 		r.Friend = &friend
 	}
 	if rawSegments, ok := raw["segments"]; ok {
-		var elements []RawMessageElement
-		if err := json.Unmarshal(rawSegments, &elements); err != nil {
+		messageElements, err := UnmarshalIMessageElements(rawSegments)
+		if err != nil {
 			return err
 		}
-		for _, element := range elements {
-			switch element.Type {
-			case string(Text):
-				var textElement TextElement
-				if err := json.Unmarshal(element.Data, &textElement); err != nil {
-					return err
-				}
-				r.Segments = append(r.Segments, &textElement)
-			case string(At):
-				var atElement AtElement
-				if err := json.Unmarshal(element.Data, &atElement); err != nil {
-					return err
-				}
-				r.Segments = append(r.Segments, &atElement)
-			case string(AtAll):
-				var atAllElement AtAllElement
-				if err := json.Unmarshal(element.Data, &atAllElement); err != nil {
-					return err
-				}
-				r.Segments = append(r.Segments, &atAllElement)
-			case string(Image):
-				var imageElement ImageElement
-				if err := json.Unmarshal(element.Data, &imageElement); err != nil {
-					return err
-				}
-				r.Segments = append(r.Segments, &imageElement)
-			case string(Record):
-				var recordElement RecordElement
-				if err := json.Unmarshal(element.Data, &recordElement); err != nil {
-					return err
-				}
-				r.Segments = append(r.Segments, &recordElement)
-			case string(Video):
-				var videoElement VideoElement
-				if err := json.Unmarshal(element.Data, &videoElement); err != nil {
-					return err
-				}
-				r.Segments = append(r.Segments, &videoElement)
-			case string(Face):
-				var faceElement FaceElement
-				if err := json.Unmarshal(element.Data, &faceElement); err != nil {
-					return err
-				}
-				r.Segments = append(r.Segments, &faceElement)
-			case string(Reply):
-				var replyElement ReplyElement
-				if err := json.Unmarshal(element.Data, &replyElement); err != nil {
-					return err
-				}
-				r.Segments = append(r.Segments, &replyElement)
-			case string(Forward):
-				var forwardElement ForwardElement
-				if err := json.Unmarshal(element.Data, &forwardElement); err != nil {
-					return err
-				}
-				r.Segments = append(r.Segments, &forwardElement)
-			case string(MarketFace):
-				var marketFaceElement MarketFaceElement
-				if err := json.Unmarshal(element.Data, &marketFaceElement); err != nil {
-					return err
-				}
-				r.Segments = append(r.Segments, &marketFaceElement)
-			case string(LightApp):
-				var lightAppElement LightAppElement
-				if err := json.Unmarshal(element.Data, &lightAppElement); err != nil {
-					return err
-				}
-				r.Segments = append(r.Segments, &lightAppElement)
-			case string(XML):
-				var xmlElement XmlElement
-				if err := json.Unmarshal(element.Data, &xmlElement); err != nil {
-					return err
-				}
-				r.Segments = append(r.Segments, &xmlElement)
-			default:
-				continue // Ignore unknown types.
-			}
-		}
+		r.Segments = messageElements
 	}
 	return nil
 }
@@ -232,6 +242,57 @@ type GroupAnnouncement struct {
 	Time           int64  `json:"time"`
 	Content        string `json:"content"`
 	ImageURL       string `json:"image_url,omitempty"`
+}
+
+type GroupEssenceMessage struct {
+	GroupId       int64             `json:"group_id"`
+	MessageSeq    int64             `json:"message_seq"`
+	MessageTime   int64             `json:"message_time"`
+	SenderId      int64             `json:"sender_id"`
+	SenderName    string            `json:"sender_name"`
+	OperatorId    int64             `json:"operator_id"`
+	OperatorName  string            `json:"operator_name"`
+	OperationTime int64             `json:"operation_time"`
+	Segments      []IMessageElement `json:"segments"`
+}
+
+func (gem *GroupEssenceMessage) UnmarshalJSON(data []byte) error {
+	raw := map[string]json.RawMessage{}
+	if err := json.Unmarshal(data, &raw); err != nil {
+		return err
+	}
+	if err := json.Unmarshal(raw["group_id"], &gem.GroupId); err != nil {
+		return err
+	}
+	if err := json.Unmarshal(raw["message_seq"], &gem.MessageSeq); err != nil {
+		return err
+	}
+	if err := json.Unmarshal(raw["message_time"], &gem.MessageTime); err != nil {
+		return err
+	}
+	if err := json.Unmarshal(raw["sender_id"], &gem.SenderId); err != nil {
+		return err
+	}
+	if err := json.Unmarshal(raw["sender_name"], &gem.SenderName); err != nil {
+		return err
+	}
+	if err := json.Unmarshal(raw["operator_id"], &gem.OperatorId); err != nil {
+		return err
+	}
+	if err := json.Unmarshal(raw["operator_name"], &gem.OperatorName); err != nil {
+		return err
+	}
+	if err := json.Unmarshal(raw["operation_time"], &gem.OperationTime); err != nil {
+		return err
+	}
+	if rawSegments, ok := raw["segments"]; ok {
+		messageElements, err := UnmarshalIMessageElements(rawSegments)
+		if err != nil {
+			return err
+		}
+		gem.Segments = messageElements
+	}
+	return nil
 }
 
 type GroupFile struct {
@@ -346,4 +407,96 @@ type GroupMemberDecrease struct {
 	GroupID    int64 `json:"group_id"`    // 群号
 	UserID     int64 `json:"user_id"`     // 退群用户ID
 	OperatorID int64 `json:"operator_id"` // 操作人ID
+}
+
+type GroupNotificationType string
+
+const (
+	JoinRequestType        GroupNotificationType = "join_request"
+	AdminChangeType        GroupNotificationType = "admin_change"
+	KickType               GroupNotificationType = "kick"
+	QuitType               GroupNotificationType = "quit"
+	InvitedJoinRequestType GroupNotificationType = "invited_join_request"
+)
+
+type GroupNotificationBase struct {
+	Type            GroupNotificationType `json:"type"`
+	GroupID         int64                 `json:"group_id"`
+	NotificationSeq int64                 `json:"notification_seq"`
+}
+
+func UnmarshalGroupNotification(data json.RawMessage) (interface{}, error) {
+	var base GroupNotificationBase
+	if err := json.Unmarshal(data, &base); err == nil {
+		return nil, err
+	}
+	switch base.Type {
+	case JoinRequestType:
+		var joinRequest JoinRequestNotification
+		if err := json.Unmarshal(data, &joinRequest); err != nil {
+			return nil, err
+		}
+		return &joinRequest, nil
+	case AdminChangeType:
+		var adminChange AdminChangeNotification
+		if err := json.Unmarshal(data, &adminChange); err != nil {
+			return nil, err
+		}
+		return &adminChange, nil
+	case KickType:
+		var kick KickNotification
+		if err := json.Unmarshal(data, &kick); err != nil {
+			return nil, err
+		}
+		return &kick, nil
+	case QuitType:
+		var quit QuitNotification
+		if err := json.Unmarshal(data, &quit); err != nil {
+			return nil, err
+		}
+		return &quit, nil
+	case InvitedJoinRequestType:
+		var invitedJoinRequest InvitedJoinRequestNotification
+		if err := json.Unmarshal(data, &invitedJoinRequest); err != nil {
+			return nil, err
+		}
+		return &invitedJoinRequest, nil
+	default:
+		return nil, nil
+	}
+}
+
+type JoinRequestNotification struct {
+	GroupNotificationBase
+	IsFiltered  bool   `json:"is_filtered"`
+	InitiatorID int64  `json:"initiator_id"`
+	State       string `json:"state"`
+	OperatorID  int64  `json:"operator_id"`
+	Comment     string `json:"comment"`
+}
+
+type AdminChangeNotification struct {
+	GroupNotificationBase
+	TargetUserID int64 `json:"target_user_id"`
+	IsSet        bool  `json:"is_set"`
+	OperatorID   int64 `json:"operator_id"`
+}
+
+type KickNotification struct {
+	GroupNotificationBase
+	TargetUserID int64 `json:"target_user_id"`
+	OperatorID   int64 `json:"operator_id"`
+}
+
+type QuitNotification struct {
+	GroupNotificationBase
+	TargetUserID int64 `json:"target_user_id"`
+}
+
+type InvitedJoinRequestNotification struct {
+	GroupNotificationBase
+	InitiatorID  int64  `json:"initiator_id"`
+	TargetUserID int64  `json:"target_user_id"`
+	State        string `json:"state"`
+	OperatorID   int64  `json:"operator_id"`
 }
