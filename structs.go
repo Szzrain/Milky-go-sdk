@@ -1,10 +1,11 @@
 package Milky_go_sdk
 
 import (
-	"github.com/gorilla/websocket"
 	"net/http"
 	"sync"
 	"time"
+
+	"github.com/gorilla/websocket"
 )
 
 type Session struct {
