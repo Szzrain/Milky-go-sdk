@@ -18,164 +18,26 @@ type (
 
 // Copied from sealdice/sealdice-core
 const (
-	Text    ElementType = "text"        // 文本
-	At      ElementType = "mention"     // 艾特
-	AtAll   ElementType = "mention_all" // 艾特全体
-	Video   ElementType = "video"       // 视频
-	Image   ElementType = "image"       // 图片
-	Reply   ElementType = "reply"       // 回复
-	Record  ElementType = "record"      // 语音
-	Face    ElementType = "face"        // 表情
-	Forward ElementType = "forward"     // 转发
+	Text       ElementType = "text"        // 文本
+	At         ElementType = "mention"     // 艾特
+	AtAll      ElementType = "mention_all" // 艾特全体
+	Video      ElementType = "video"       // 视频
+	Image      ElementType = "image"       // 图片
+	Reply      ElementType = "reply"       // 回复
+	Record     ElementType = "record"      // 语音
+	Face       ElementType = "face"        // 表情
+	Forward    ElementType = "forward"     // 转发
+	MarketFace ElementType = "market_face" // 市场表情
+	LightApp   ElementType = "light_app"   // 小程序
+	XML        ElementType = "xml"         // XML
 )
-
-type APIResponse struct {
-	Status  string          `json:"status"`
-	RetCode int             `json:"retcode"`
-	Data    json.RawMessage `json:"data"`
-	Message string          `json:"message,omitempty"` // 错误信息
-}
-
-type LoginInfo struct {
-	UIN      int64  `json:"uin"`
-	Nickname string `json:"nickname"`
-}
-
-type ImplInfo struct {
-	ImplName          string `json:"impl_name"`    // 实现名称
-	ImplVersion       string `json:"impl_version"` // 实现版本
-	QQProtocolVersion string `json:"qq_protocol_version"`
-	QQProtocolType    string `json:"qq_protocol_type"`
-	MilkyVersion      string `json:"milky_version"` // Milky 协议版本
-}
-
-type UserProfile struct {
-	Nickname string `json:"nickname"`
-	Qid      string `json:"qid"`
-	Age      int32  `json:"age"`
-	Sex      string `json:"sex"`
-	Remark   string `json:"remark"`
-	Bio      string `json:"bio"`
-	Level    int32  `json:"level"`
-	Country  string `json:"country"`
-	City     string `json:"city"`
-	School   string `json:"school"`
-}
-
-type FriendCategory struct {
-	CategoryID   int32  `json:"category_id"`
-	CategoryName string `json:"category_name"`
-}
-
-type Friend struct {
-	UserID   int64           `json:"user_id"`
-	QID      string          `json:"qid,omitempty"`
-	Nickname string          `json:"nickname"`
-	Sex      string          `json:"sex"`
-	Remark   string          `json:"remark"`
-	Category *FriendCategory `json:"category"`
-}
-
-type GroupInfo struct {
-	GroupId        int64  `json:"group_id"`
-	Name           string `json:"name"`
-	MemberCount    int32  `json:"member_count"`
-	MaxMemberCount int32  `json:"max_member_count"`
-}
-
-type GroupMemberInfo struct {
-	GroupId      int64  `json:"group_id"`
-	UserId       int64  `json:"user_id"`
-	Nickname     string `json:"nickname"`
-	Card         string `json:"card"`
-	Title        string `json:"title"`
-	Sex          string `json:"sex"`
-	Level        int32  `json:"level"`
-	Role         string `json:"role"` // "owner", "admin", "member"
-	JoinTime     int64  `json:"join_time"`
-	LastSentTime int64  `json:"last_sent_time"`
-}
-
-type GroupAnnouncement struct {
-	GroupId        int64  `json:"group_id"`
-	AnnouncementID string `json:"announcement_id"`
-	UserID         int64  `json:"user_id"`
-	Time           int64  `json:"time"`
-	Content        string `json:"content"`
-	ImageURL       string `json:"image_url,omitempty"`
-}
-
-type GroupFile struct {
-	GroupId         int64  `json:"group_id"`
-	FileID          string `json:"file_id"`                    // 文件ID
-	FileName        string `json:"file_name"`                  // 文件名
-	ParentFolderID  string `json:"parent_folder_id,omitempty"` // 父文件夹ID
-	FileSize        int64  `json:"file_size"`                  // 文件大小
-	UploadedTime    int64  `json:"uploaded_time"`              // 上传时间
-	ExpireTime      int64  `json:"expire_time"`                // 过期时间
-	UploaderID      int64  `json:"uploader_id"`                // 上传者ID
-	DownloadedTimes int32  `json:"downloaded_times"`           // 下载次数
-}
-
-type GroupFolder struct {
-	GroupId          int64  `json:"group_id"`
-	FolderID         string `json:"folder_id"` // 文件夹ID
-	ParentFolderID   string `json:"parent_folder_id,omitempty"`
-	FolderName       string `json:"folder_name"`        // 文件夹名称
-	CreatedTime      int64  `json:"created_time"`       // 创建时间
-	LastModifiedTime int64  `json:"last_modified_time"` // 最后修改时间
-	CreatorID        int64  `json:"creator_id"`
-	FileCount        int32  `json:"file_count"`
-}
-
-type FriendRequest struct {
-	InitiatorUID string `json:"initiator_uid"`
-	InitiatorID  int64  `json:"initiator_id"` // 发起者ID
-	Comment      string `json:"comment"`
-	Via          string `json:"via"`
-}
-
-type GroupRequest struct {
-	RequestID   string `json:"request_id"`
-	Time        int64  `json:"time"`
-	IsFiltered  bool   `json:"is_filtered"`  // 是否被过滤
-	InitiatorID int64  `json:"initiator_id"` // 发起者ID
-	State       string `json:"state"`
-	GroupID     int64  `json:"group_id"`
-	OperatorID  int64  `json:"operator_id,omitempty"`
-	RequestType string `json:"request_type"`
-	Comment     string `json:"comment,omitempty"`
-	InviteeID   int64  `json:"invitee_id,omitempty"`
-}
-
-type GroupInvitation struct {
-	InvitationSeq int64 `json:"invitation_seq"`
-	InitiatorID   int64 `json:"initiator_id"` // 发起者ID
-	GroupID       int64 `json:"group_id"`
-}
-
-type BotOffline struct {
-	Reason string `json:"reason"` // 原因
-}
-
-type GroupNudge struct {
-	GroupID             int64  `json:"group_id"`    // 群号
-	SenderID            int64  `json:"sender_id"`   // 发送者ID
-	ReceiverID          int64  `json:"receiver_id"` // 接收者ID
-	DisplayAction       string `json:"display_action"`
-	DisplaySuffix       string `json:"display_suffix"`
-	DisplayActionImgUrl string `json:"display_action_img_url"`
-}
-
-type GroupMemberDecrease struct {
-	GroupID    int64 `json:"group_id"`    // 群号
-	UserID     int64 `json:"user_id"`     // 退群用户ID
-	OperatorID int64 `json:"operator_id"` // 操作人ID
-}
 
 const maxFileSize = 1024 * 1024 * 50 // 50MB
 
+// Message Elements. Letter I means Incoming, O means Outgoing (Sending)
+
 type TextElement struct {
+	// I & O
 	Text string `json:"text"`
 }
 
@@ -200,6 +62,7 @@ func (t *TextElement) MarshalJSON() ([]byte, error) {
 }
 
 type AtElement struct {
+	// I & O
 	UserID int64 `json:"user_id"`
 }
 
@@ -223,13 +86,13 @@ func (t *AtElement) MarshalJSON() ([]byte, error) {
 	})
 }
 
-type ReceiveAtAllElement struct{}
+type AtAllElement struct{}
 
-func (t *ReceiveAtAllElement) Type() ElementType {
+func (t *AtAllElement) Type() ElementType {
 	return AtAll
 }
 
-func (t *ReceiveAtAllElement) MarshalJSON() ([]byte, error) {
+func (t *AtAllElement) MarshalJSON() ([]byte, error) {
 	return json.Marshal(&struct {
 		Type ElementType `json:"type"`
 		Data struct{}    `json:"data"`
@@ -240,6 +103,7 @@ func (t *ReceiveAtAllElement) MarshalJSON() ([]byte, error) {
 }
 
 type ReplyElement struct {
+	// I & O
 	MessageSeq int64 `json:"message_seq"` // 回复的目标消息ID
 }
 
@@ -264,11 +128,16 @@ func (t *ReplyElement) MarshalJSON() ([]byte, error) {
 }
 
 type ImageElement struct {
-	URI        string `json:"uri,omitempty"` // 图片URI
-	ResourceID string `json:"resource_id"`   // 图片资源ID
+	// I & O
+	Summary string `json:"summary"`  // 图片摘要
+	SubType string `json:"sub_type"` // 图片子类型
+	// O
+	URI string `json:"uri,omitempty"` // 图片URI
+	// I
+	ResourceID string `json:"resource_id"` // 图片资源ID
 	TempURL    string `json:"temp_url"`
-	Summary    string `json:"summary"`  // 图片摘要
-	SubType    string `json:"sub_type"` // 图片子类型
+	Width      int32  `json:"width"`
+	Height     int32  `json:"height"`
 }
 
 func (l *ImageElement) Type() ElementType {
@@ -298,8 +167,10 @@ func (l *ImageElement) MarshalJSON() ([]byte, error) {
 }
 
 type RecordElement struct {
-	URI        string `json:"uri,omitempty"` // 语音URI
-	ResourceID string `json:"resource_id"`   // 资源ID
+	// O
+	URI string `json:"uri,omitempty"` // 语音URI
+	// I
+	ResourceID string `json:"resource_id"` // 资源ID
 	TempURL    string `json:"temp_url"`
 	Duration   int32  `json:"duration"`
 }
@@ -324,7 +195,43 @@ func (r *RecordElement) MarshalJSON() ([]byte, error) {
 	})
 }
 
+type VideoElement struct {
+	// O
+	URI      string `json:"uri,omitempty"`
+	ThumbURI string `json:"thumb_uri,omitempty"`
+	// I
+	ResourceID string `json:"resource_id"`
+	TempURL    string `json:"temp_url"`
+	Width      int32  `json:"width"`
+	Height     int32  `json:"height"`
+	Duration   int32  `json:"duration"`
+}
+
+func (v *VideoElement) Type() ElementType {
+	return Video
+}
+
+func (v *VideoElement) MarshalJSON() ([]byte, error) {
+	return json.Marshal(&struct {
+		Type ElementType `json:"type"`
+		Data struct {
+			URI      string `json:"uri"`
+			ThumbURI string `json:"thumb_uri"`
+		} `json:"data"`
+	}{
+		Type: v.Type(),
+		Data: struct {
+			URI      string `json:"uri"`
+			ThumbURI string `json:"thumb_uri"`
+		}{
+			URI:      v.URI,
+			ThumbURI: v.ThumbURI,
+		},
+	})
+}
+
 type FaceElement struct {
+	// I & O
 	FaceID string `json:"face_id"`
 }
 
@@ -348,15 +255,17 @@ func (f *FaceElement) MarshalJSON() ([]byte, error) {
 	})
 }
 
-type OutGoingForwardMessage struct {
+type OutgoingForwardedMessage struct {
 	UserID   int64             `json:"user_id"`
 	Name     string            `json:"name"`     // 转发者名称
 	Segments []IMessageElement `json:"segments"` // 转发的消息内容
 }
 
 type ForwardElement struct {
-	ForwardID string                   `json:"forward_id"` // 转发消息ID
-	Messages  []OutGoingForwardMessage `json:"messages"`
+	// I
+	ForwardID string `json:"forward_id"` // 转发消息ID
+	// O
+	Messages []OutgoingForwardedMessage `json:"messages"`
 }
 
 func (f *ForwardElement) Type() ElementType {
@@ -367,14 +276,53 @@ func (f *ForwardElement) MarshalJSON() ([]byte, error) {
 	return json.Marshal(&struct {
 		Type ElementType `json:"type"`
 		Data struct {
-			Messages []OutGoingForwardMessage `json:"messages"`
+			Messages []OutgoingForwardedMessage `json:"messages"`
 		} `json:"data"`
 	}{
 		Type: f.Type(),
 		Data: struct {
-			Messages []OutGoingForwardMessage `json:"messages"`
+			Messages []OutgoingForwardedMessage `json:"messages"`
 		}{
 			Messages: f.Messages,
 		},
 	})
+}
+
+// Incoming Only
+
+type MarketFaceElement struct {
+	URL string `json:"url"`
+}
+
+func (m *MarketFaceElement) Type() ElementType {
+	return MarketFace
+}
+
+func (m *MarketFaceElement) MarshalJSON() ([]byte, error) {
+	return json.Marshal(m)
+}
+
+type LightAppElement struct {
+	AppName     string `json:"app_name"`
+	JSONPayload string `json:"json_payload"`
+}
+
+func (l *LightAppElement) Type() ElementType {
+	return LightApp
+}
+
+func (l *LightAppElement) MarshalJSON() ([]byte, error) {
+	return json.Marshal(l)
+}
+
+type XmlElement struct {
+	XML string `json:"xml"`
+}
+
+func (x *XmlElement) Type() ElementType {
+	return XML
+}
+
+func (x *XmlElement) MarshalJSON() ([]byte, error) {
+	return json.Marshal(x)
 }

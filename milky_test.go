@@ -110,14 +110,14 @@ func TestMilky(m *testing.T) {
 		m.Fatalf("Failed to get login info: %v", err)
 	}
 	logger.Infof("Login info: UserId %d, Nickname %s", info.UIN, info.Nickname)
-	//forward := OutGoingForwardMessage{
+	//forward := OutgoingForwardedMessage{
 	//	UserID: info.UIN,
 	//	Name:   info.Nickname,
 	//	Segments: []IMessageElement{
 	//		&TextElement{Text: "This is a message sent by MilkyGo SDK."},
 	//	},
 	//}
-	//forward2 := OutGoingForwardMessage{
+	//forward2 := OutgoingForwardedMessage{
 	//	UserID: info.UIN,
 	//	Name:   info.Nickname,
 	//	Segments: []IMessageElement{
@@ -125,7 +125,7 @@ func TestMilky(m *testing.T) {
 	//	},
 	//}
 	//element := &ForwardElement{
-	//	Messages: []OutGoingForwardMessage{forward, forward2},
+	//	Messages: []OutgoingForwardedMessage{forward, forward2},
 	//}
 	text := TextElement{
 		Text: "Hello, this is a test message from MilkyGo SDK!",

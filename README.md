@@ -116,36 +116,36 @@ Ref:
 - [x] text
 - [x] mention
 - [x] mention_all
-- [ ] face
+- [x] face
 - [x] reply
 - [x] image
 - [x] record
 - [x] video
 - [x] forward
-- [ ] market_face
-- [ ] light_app
-- [ ] xml
+- [x] market_face
+- [x] light_app
+- [x] xml
 
 #### outgoing
 
 - [x] text
 - [x] mention
 - [x] mention_all
-- [ ] face
+- [x] face
 - [x] reply
 - [x] image
 - [x] record
-- [ ] video
-- [ ] forward
+- [x] video
+- [x] forward
 
 #### forward
 
 - [x] text
 <!-- - [ ] mention -->
 <!-- - [ ] mention_all -->
-- [ ] face
-- [ ] reply
-- [ ] image
-- [ ] record
-- [ ] video
-- [ ] forward
+- [x] face
+- [x] reply
+- [x] image
+- [x] record
+- [x] video
+- [x] forward
