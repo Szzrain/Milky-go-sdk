@@ -4,12 +4,20 @@ package Milky_go_sdk
 // Following are all the event types.
 // Event type values are used to match the events returned
 const (
-	messageReceiveEventType      = "message_receive"
-	friendRequestEventType       = "friend_request"
-	botOfflineEventType          = "bot_offline"
-	groupNudgeEventType          = "group_nudge"
-	groupMemberDecreaseEventType = "group_member_decrease"
-	groupInvitationEventType     = "group_invitation"
+	botOfflineEventType              = "bot_offline"
+	messageReceiveEventType          = "message_receive"
+	messageRecallEventType           = "message_recall"
+	friendRequestEventType           = "friend_request"
+	friendNudgeEventType             = "friend_nudge"
+	groupNudgeEventType              = "group_nudge"
+	groupMessageReactionEventType    = "group_message_reaction"
+	groupMuteEventType               = "group_mute"
+	groupWholeMuteEventType          = "group_whole_mute"
+	groupMemberIncreaseEventType     = "group_member_increase"
+	groupMemberDecreaseEventType     = "group_member_decrease"
+	groupJoinRequestEventType        = "group_join_request"
+	groupInvitedJoinRequestEventType = "group_invited_join_request"
+	groupInvitationEventType         = "group_invitation"
 )
 
 func handlerForInterface(handler interface{}) EventHandler {
@@ -22,12 +30,24 @@ func handlerForInterface(handler interface{}) EventHandler {
 		return friendRequestEventHandler(v)
 	case func(*Session, *BotOffline):
 		return botOfflineEventHandler(v)
+	case func(*Session, *FriendNudge):
+		return friendNudgeEventHandler(v)
 	case func(*Session, *GroupNudge):
 		return groupNudgeEventHandler(v)
+	case func(*Session, *GroupMessageReaction):
+		return groupMessageReactionEventHandler(v)
+	case func(*Session, *GroupMute):
+		return groupMuteEventHandler(v)
+	case func(*Session, *GroupWholeMute):
+		return groupWholeMuteEventHandler(v)
+	case func(*Session, *GroupMemberIncrease):
+		return groupMemberIncreaseEventHandler(v)
 	case func(*Session, *GroupMemberDecrease):
 		return groupMemberDecreaseEventHandler(v)
 	case func(*Session, *GroupInvitation):
 		return groupInvitationEventHandler(v)
+	case func(*Session, *MessageRecall):
+		return messageRecallEventHandler(v)
 	}
 
 	return nil
@@ -104,6 +124,70 @@ func (eh groupNudgeEventHandler) Handle(s *Session, i interface{}) {
 	}
 }
 
+type groupMessageReactionEventHandler func(*Session, *GroupMessageReaction)
+
+func (eh groupMessageReactionEventHandler) Type() string {
+	return groupMessageReactionEventType
+}
+
+func (eh groupMessageReactionEventHandler) New() interface{} {
+	return &GroupMessageReaction{}
+}
+
+func (eh groupMessageReactionEventHandler) Handle(s *Session, i interface{}) {
+	if t, ok := i.(*GroupMessageReaction); ok {
+		eh(s, t)
+	}
+}
+
+type groupMuteEventHandler func(*Session, *GroupMute)
+
+func (eh groupMuteEventHandler) Type() string {
+	return groupMuteEventType
+}
+
+func (eh groupMuteEventHandler) New() interface{} {
+	return &GroupMute{}
+}
+
+func (eh groupMuteEventHandler) Handle(s *Session, i interface{}) {
+	if t, ok := i.(*GroupMute); ok {
+		eh(s, t)
+	}
+}
+
+type groupWholeMuteEventHandler func(*Session, *GroupWholeMute)
+
+func (eh groupWholeMuteEventHandler) Type() string {
+	return groupWholeMuteEventType
+}
+
+func (eh groupWholeMuteEventHandler) New() interface{} {
+	return &GroupWholeMute{}
+}
+
+func (eh groupWholeMuteEventHandler) Handle(s *Session, i interface{}) {
+	if t, ok := i.(*GroupWholeMute); ok {
+		eh(s, t)
+	}
+}
+
+type groupMemberIncreaseEventHandler func(*Session, *GroupMemberIncrease)
+
+func (eh groupMemberIncreaseEventHandler) Type() string {
+	return groupMemberIncreaseEventType
+}
+
+func (eh groupMemberIncreaseEventHandler) New() interface{} {
+	return &GroupMemberIncrease{}
+}
+
+func (eh groupMemberIncreaseEventHandler) Handle(s *Session, i interface{}) {
+	if t, ok := i.(*GroupMemberIncrease); ok {
+		eh(s, t)
+	}
+}
+
 // groupMemberDecreaseEventHandler is an event handler for GroupMemberDecrease events.
 type groupMemberDecreaseEventHandler func(*Session, *GroupMemberDecrease)
 
@@ -138,11 +222,49 @@ func (eh groupInvitationEventHandler) Handle(s *Session, i interface{}) {
 	}
 }
 
+type messageRecallEventHandler func(*Session, *MessageRecall)
+
+func (eh messageRecallEventHandler) Type() string {
+	return messageRecallEventType
+}
+
+func (eh messageRecallEventHandler) New() interface{} {
+	return &MessageRecall{}
+}
+
+func (eh messageRecallEventHandler) Handle(s *Session, i interface{}) {
+	if t, ok := i.(*MessageRecall); ok {
+		eh(s, t)
+	}
+}
+
+type friendNudgeEventHandler func(*Session, *FriendNudge)
+
+func (eh friendNudgeEventHandler) Type() string {
+	return friendNudgeEventType
+}
+
+func (eh friendNudgeEventHandler) New() interface{} {
+	return &FriendNudge{}
+}
+
+func (eh friendNudgeEventHandler) Handle(s *Session, i interface{}) {
+	if t, ok := i.(*FriendNudge); ok {
+		eh(s, t)
+	}
+}
+
 func init() {
 	registerInterfaceProvider(messageReceiveEventHandler(nil))
 	registerInterfaceProvider(friendRequestEventHandler(nil))
 	registerInterfaceProvider(botOfflineEventHandler(nil))
+	registerInterfaceProvider(friendNudgeEventHandler(nil))
 	registerInterfaceProvider(groupNudgeEventHandler(nil))
+	registerInterfaceProvider(groupMuteEventHandler(nil))
+	registerInterfaceProvider(groupWholeMuteEventHandler(nil))
+	registerInterfaceProvider(groupMessageReactionEventHandler(nil))
+	registerInterfaceProvider(groupMemberIncreaseEventHandler(nil))
 	registerInterfaceProvider(groupMemberDecreaseEventHandler(nil))
 	registerInterfaceProvider(groupInvitationEventHandler(nil))
+	registerInterfaceProvider(messageRecallEventHandler(nil))
 }

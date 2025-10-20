@@ -283,6 +283,24 @@ type GroupInvitation struct {
 	GroupID       int64 `json:"group_id"`
 }
 
+type MessageRecall struct {
+	MessageScene  string `json:"message_scene"` // "friend", "group", etc.
+	PeerID        int64  `json:"peer_id"`
+	MessageSeq    int64  `json:"message_seq"`
+	SenderID      int64  `json:"sender_id"`
+	OperatorID    int64  `json:"operator_id"`
+	DisplaySuffix string `json:"display_suffix"`
+}
+
+type FriendNudge struct {
+	UserID              int64  `json:"user_id"`
+	IsSelfSend          bool   `json:"is_self_send"`
+	IsSelfReceive       bool   `json:"is_self_receive"`
+	DisplayAction       string `json:"display_action"`
+	DisplaySuffix       string `json:"display_suffix"`
+	DisplayActionImgUrl string `json:"display_action_img_url"`
+}
+
 type BotOffline struct {
 	Reason string `json:"reason"` // 原因
 }
@@ -294,6 +312,34 @@ type GroupNudge struct {
 	DisplayAction       string `json:"display_action"`
 	DisplaySuffix       string `json:"display_suffix"`
 	DisplayActionImgUrl string `json:"display_action_img_url"`
+}
+
+type GroupMessageReaction struct {
+	GroupID    int64  `json:"group_id"` // 群号
+	UserID     int64  `json:"user_id"`
+	MessageSeq int64  `json:"message_seq"`
+	FaceID     string `json:"face_id"`
+	IsAdd      bool   `json:"is_add"`
+}
+
+type GroupMute struct {
+	GroupID    int64 `json:"group_id"` // 群号
+	UserID     int64 `json:"user_id"`
+	OperatorID int64 `json:"operator_id"`
+	Duration   int32 `json:"duration"` // 禁言时长，单位秒，0表示取消禁言
+}
+
+type GroupWholeMute struct {
+	GroupID    int64 `json:"group_id"` // 群号
+	OperatorID int64 `json:"operator_id"`
+	IsMute     bool  `json:"is_mute"`
+}
+
+type GroupMemberIncrease struct {
+	GroupID    int64 `json:"group_id"`              // 群号
+	UserID     int64 `json:"user_id"`               // 加群用户ID
+	OperatorID int64 `json:"operator_id,omitempty"` // 操作人ID
+	InvitorID  int64 `json:"invitor_id,omitempty"`  // 邀请人ID
 }
 
 type GroupMemberDecrease struct {

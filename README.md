@@ -91,21 +91,21 @@ Ref:
 
 - [x] bot_offline
 - [x] message_receive
-- [ ] message_recall
+- [x] message_recall
 - [x] friend_request
 - [ ] group_join_request
 - [ ] group_invited_join_request
 - [x] group_invitation
-- [ ] friend_nudge
+- [x] friend_nudge
 - [ ] friend_file_upload
 - [ ] group_admin_change
 - [ ] group_essence_message_change
-- [ ] group_member_increase
+- [x] group_member_increase
 - [x] group_member_decrease
 - [ ] group_name_change
-- [ ] group_message_reaction
-- [ ] group_mute
-- [ ] group_whole_mute
+- [x] group_message_reaction
+- [x] group_mute
+- [x] group_whole_mute
 - [x] group_nudge
 - [ ] group_file_upload
 
