@@ -1,6 +1,10 @@
 # Milky Go SDK
 
-Ref: 
+## Use
+
+See [milky_test.go](./milky_test.go) for example code.
+
+## Ref: 
 
 [DiscordGo](https://github.com/bwmarrin/discordgo)
 
