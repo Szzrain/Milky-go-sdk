@@ -78,7 +78,7 @@ func TestMilky(m *testing.T) {
 			return
 		}
 		fmt.Printf("Received friend request: UserId %d, Comment %s\n", m.InitiatorID, m.Comment)
-		// err = session2.AcceptFriendRequest(m.InvitationSeq)
+		// err = session2.AcceptFriendRequest(m.InitiatorUID, false)
 		// if err != nil {
 		// 	logger.Errorf("Failed to accept friend request: %v", err)
 		// 	return

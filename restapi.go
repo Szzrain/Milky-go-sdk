@@ -878,7 +878,7 @@ func (s *Session) RejectGroupRequest(notificationSeq int64, notificationType str
 	return handleAPIResponse(request, &apiResponse, nil)
 }
 
-func (s *Session) AcceptGroupInvitation(groupID int64, invitationSeq string) error {
+func (s *Session) AcceptGroupInvitation(groupID int64, invitationSeq int64) error {
 	request, err := s.Request("POST", EndpointAcceptGroupInvitation, map[string]interface{}{
 		"group_id":       groupID,
 		"invitation_seq": invitationSeq,
@@ -890,7 +890,7 @@ func (s *Session) AcceptGroupInvitation(groupID int64, invitationSeq string) err
 	return handleAPIResponse(request, &apiResponse, nil)
 }
 
-func (s *Session) RejectGroupInvitation(groupID int64, invitationSeq string) error {
+func (s *Session) RejectGroupInvitation(groupID int64, invitationSeq int64) error {
 	request, err := s.Request("POST", EndpointRejectGroupInvitation, map[string]interface{}{
 		"group_id":       groupID,
 		"invitation_seq": invitationSeq,
