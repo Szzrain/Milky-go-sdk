@@ -172,7 +172,7 @@ func (s *Session) heartbeat(wsConn *websocket.Conn, listening <-chan interface{}
 	}
 
 	var err error
-	ticker := time.NewTicker(heartbeatIntervalMsec * time.Millisecond)
+	ticker := time.NewTicker(heartbeatIntervalMsec)
 	defer ticker.Stop()
 
 	for {
