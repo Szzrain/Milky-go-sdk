@@ -217,7 +217,7 @@ type Friend struct {
 
 type GroupInfo struct {
 	GroupId        int64  `json:"group_id"`
-	Name           string `json:"name"`
+	Name           string `json:"group_name"`
 	MemberCount    int32  `json:"member_count"`
 	MaxMemberCount int32  `json:"max_member_count"`
 }
