@@ -111,15 +111,15 @@ func TestMilky(m *testing.T) {
 	}
 	logger.Infof("Login info: UserId %d, Nickname %s", info.UIN, info.Nickname)
 	//forward := OutgoingForwardedMessage{
-	//	UserID: info.UIN,
-	//	Name:   info.Nickname,
+	//	UserID:     info.UIN,
+	//	SenderName: info.Nickname,
 	//	Segments: []IMessageElement{
 	//		&TextElement{Text: "This is a message sent by MilkyGo SDK."},
 	//	},
 	//}
 	//forward2 := OutgoingForwardedMessage{
-	//	UserID: info.UIN,
-	//	Name:   info.Nickname,
+	//	UserID:     info.UIN,
+	//	SenderName: info.Nickname,
 	//	Segments: []IMessageElement{
 	//		&TextElement{Text: "This is a second message in the same forward."},
 	//	},
