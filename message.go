@@ -256,9 +256,27 @@ func (f *FaceElement) MarshalJSON() ([]byte, error) {
 }
 
 type OutgoingForwardedMessage struct {
-	UserID   int64             `json:"user_id"`
-	Name     string            `json:"name"`     // 转发者名称
+	UserID     int64  `json:"user_id"`
+	SenderName string `json:"sender_name"` // 转发者名称
+	// Deprecated: use SenderName.
+	Name     string            `json:"-"`
 	Segments []IMessageElement `json:"segments"` // 转发的消息内容
+}
+
+func (m OutgoingForwardedMessage) MarshalJSON() ([]byte, error) {
+	senderName := m.SenderName
+	if senderName == "" {
+		senderName = m.Name
+	}
+	return json.Marshal(&struct {
+		UserID     int64             `json:"user_id"`
+		SenderName string            `json:"sender_name"`
+		Segments   []IMessageElement `json:"segments"`
+	}{
+		UserID:     m.UserID,
+		SenderName: senderName,
+		Segments:   m.Segments,
+	})
 }
 
 type ForwardElement struct {
