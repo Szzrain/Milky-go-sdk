@@ -26,6 +26,11 @@ type Session struct {
 
 	Logger Logger
 
+	// OnConnectionChange is called after the session lock is released.
+	// It reports successful WebSocket handshakes and closed connections.
+	OnConnectionChange func(*Session, bool)
+	reconnectStop      chan struct{}
+
 	// Whether or not to call event handlers synchronously.
 	// e.g. false = launch event handlers in their own goroutines.
 	SyncEvents bool

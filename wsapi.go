@@ -44,7 +44,18 @@ func (s *Session) Open() error {
 	// Prevent Open or other major Session functions from
 	// being called while Open is still running.
 	s.Lock()
-	defer s.Unlock()
+	connected := false
+	defer func() {
+		s.Unlock()
+		if connected && s.OnConnectionChange != nil {
+			s.OnConnectionChange(s, true)
+		}
+	}()
+	select {
+	case <-s.reconnectStop:
+		return errors.New("session shut down")
+	default:
+	}
 
 	// If the websock is already open, bail out here.
 	if s.wsConn != nil {
@@ -89,6 +100,7 @@ func (s *Session) Open() error {
 	// Start sending heartbeats and reading messages
 	go s.heartbeat(s.wsConn, s.listening, h.HeartbeatInterval)
 	go s.listen(s.wsConn, s.listening)
+	connected = true
 
 	s.Logger.Debug("exiting")
 	return nil
@@ -285,11 +297,20 @@ func (s *Session) reconnect() {
 
 	var err error
 
-	if s.ShouldReconnectOnError {
+	s.RLock()
+	enabled := s.ShouldReconnectOnError
+	stop := s.reconnectStop
+	s.RUnlock()
+	if enabled {
 
 		wait := time.Duration(1)
 
 		for {
+			select {
+			case <-stop:
+				return
+			default:
+			}
 			s.Logger.Info("trying to reconnect to gateway")
 
 			err = s.Open()
@@ -307,7 +328,13 @@ func (s *Session) reconnect() {
 
 			s.Logger.Errorf("error reconnecting to gateway, %s", err)
 
-			<-time.After(wait * time.Second)
+			timer := time.NewTimer(wait * time.Second)
+			select {
+			case <-stop:
+				timer.Stop()
+				return
+			case <-timer.C:
+			}
 			wait *= 2
 			if wait > 600 {
 				wait = 600
@@ -327,6 +354,7 @@ func (s *Session) CloseWithCode(closeCode int) (err error) {
 
 	s.Logger.Debug("called")
 	s.Lock()
+	disconnected := s.wsConn != nil
 
 	if s.listening != nil {
 		s.Logger.Info("closing listening channel")
@@ -358,6 +386,33 @@ func (s *Session) CloseWithCode(closeCode int) (err error) {
 	}
 
 	s.Unlock()
+	if disconnected && s.OnConnectionChange != nil {
+		s.OnConnectionChange(s, false)
+	}
 
 	return
+}
+
+// IsConnected reports whether the session currently has an open WebSocket.
+func (s *Session) IsConnected() bool {
+	s.RLock()
+	defer s.RUnlock()
+	return s.wsConn != nil
+}
+
+// Shutdown closes the connection and cancels pending automatic reconnects.
+// A new Session must be created to connect again after Shutdown.
+func (s *Session) Shutdown() error {
+	s.Lock()
+	if s.reconnectStop == nil {
+		s.reconnectStop = make(chan struct{})
+	}
+	select {
+	case <-s.reconnectStop:
+	default:
+		close(s.reconnectStop)
+	}
+	s.ShouldReconnectOnError = false
+	s.Unlock()
+	return s.Close()
 }
