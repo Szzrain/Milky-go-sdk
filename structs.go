@@ -1,6 +1,7 @@
 package Milky_go_sdk
 
 import (
+	"context"
 	"net/http"
 	"sync"
 	"time"
@@ -28,8 +29,11 @@ type Session struct {
 
 	// OnConnectionChange is called after the session lock is released.
 	// It reports successful WebSocket handshakes and closed connections.
+	// Configure it before Open. The callback may query IsConnected and should return promptly.
 	OnConnectionChange func(*Session, bool)
-	reconnectStop      chan struct{}
+	reconnectOnce      sync.Once
+	reconnectCtx       context.Context
+	reconnectCancel    context.CancelFunc
 
 	// Whether or not to call event handlers synchronously.
 	// e.g. false = launch event handlers in their own goroutines.

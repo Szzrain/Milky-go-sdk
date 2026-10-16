@@ -3,9 +3,11 @@ package Milky_go_sdk
 import (
 	"bytes"
 	"compress/zlib"
+	"context"
 	"encoding/json"
 	"errors"
 	"io"
+	"net"
 	"net/http"
 	"time"
 
@@ -38,6 +40,7 @@ type resumePacket struct {
 // Open creates a websocket connection
 func (s *Session) Open() error {
 	s.Logger.Debugf("called")
+	ctx := s.connectionContext()
 
 	var err error
 
@@ -52,7 +55,7 @@ func (s *Session) Open() error {
 		}
 	}()
 	select {
-	case <-s.reconnectStop:
+	case <-ctx.Done():
 		return errors.New("session shut down")
 	default:
 	}
@@ -74,10 +77,15 @@ func (s *Session) Open() error {
 	if s.Token != "" {
 		addr = s.WSGateway + "?access_token=" + s.Token
 	}
-	s.wsConn, _, err = s.Dialer.Dial(addr, header)
+	s.wsConn, err = s.dialWebsocket(ctx, addr, header)
 	if err != nil {
 		s.Logger.Errorf("error connecting to gateway %s, %s", s.WSGateway, err)
 		s.wsConn = nil // Just to be safe.
+		return err
+	}
+	if err = ctx.Err(); err != nil {
+		_ = s.wsConn.Close()
+		s.wsConn = nil
 		return err
 	}
 
@@ -106,6 +114,47 @@ func (s *Session) Open() error {
 	return nil
 }
 
+func (s *Session) dialWebsocket(ctx context.Context, addr string, header http.Header) (*websocket.Conn, error) {
+	dialer := websocket.DefaultDialer
+	if s.Dialer != nil {
+		dialer = s.Dialer
+	}
+	dialerCopy := *dialer
+	var stopCancellation func() bool
+	defer func() {
+		if stopCancellation != nil {
+			stopCancellation()
+		}
+	}()
+	// DialContext passes cancellation to TCP dialing, but an HTTP upgrade read
+	// only uses its deadline. Close the pending socket on session shutdown too.
+	withCancellation := func(dial func(context.Context, string, string) (net.Conn, error)) func(context.Context, string, string) (net.Conn, error) {
+		return func(dialCtx context.Context, network, address string) (net.Conn, error) {
+			conn, err := dial(dialCtx, network, address)
+			if err == nil {
+				stopCancellation = context.AfterFunc(ctx, func() { _ = conn.Close() })
+			}
+			return conn, err
+		}
+	}
+	netDial := dialerCopy.NetDialContext
+	if netDial == nil {
+		if legacyDial := dialerCopy.NetDial; legacyDial != nil {
+			netDial = func(_ context.Context, network, address string) (net.Conn, error) {
+				return legacyDial(network, address)
+			}
+		} else {
+			netDial = (&net.Dialer{}).DialContext
+		}
+	}
+	dialerCopy.NetDialContext = withCancellation(netDial)
+	if dialerCopy.NetDialTLSContext != nil {
+		dialerCopy.NetDialTLSContext = withCancellation(dialerCopy.NetDialTLSContext)
+	}
+	conn, _, err := dialerCopy.DialContext(ctx, addr, header)
+	return conn, err
+}
+
 // listen polls the websocket connection for events, it will stop when the
 // listening channel is closed, or an error occurs.
 func (s *Session) listen(wsConn *websocket.Conn, listening <-chan interface{}) {
@@ -130,13 +179,15 @@ func (s *Session) listen(wsConn *websocket.Conn, listening <-chan interface{}) {
 				s.Logger.Warnf("error reading from gateway %s websocket, %s", s.WSGateway, err)
 				// There has been an error reading, close the websocket so that
 				// OnDisconnect event is emitted.
-				err := s.Close()
+				closed, err := s.closeConnection(wsConn, websocket.CloseNormalClosure)
 				if err != nil {
 					s.Logger.Warnf("error closing session connection, %s", err)
 				}
 
-				s.Logger.Infof("calling reconnect() now")
-				s.reconnect()
+				if closed {
+					s.Logger.Infof("calling reconnect() now")
+					s.reconnect()
+				}
 			}
 
 			return
@@ -203,8 +254,9 @@ func (s *Session) heartbeat(wsConn *websocket.Conn, listening <-chan interface{}
 			} else {
 				s.Logger.Errorf("haven't gotten a heartbeat ACK in %v, triggering a reconnection", time.Now().UTC().Sub(last))
 			}
-			s.Close()
-			s.reconnect()
+			if closed, _ := s.closeConnection(wsConn, websocket.CloseNormalClosure); closed {
+				s.reconnect()
+			}
 			return
 		}
 		s.Lock()
@@ -299,8 +351,8 @@ func (s *Session) reconnect() {
 
 	s.RLock()
 	enabled := s.ShouldReconnectOnError
-	stop := s.reconnectStop
 	s.RUnlock()
+	stop := s.connectionContext().Done()
 	if enabled {
 
 		wait := time.Duration(1)
@@ -351,10 +403,21 @@ func (s *Session) Close() error {
 // CloseWithCode closes a websocket using the provided closeCode and stops all
 // listening/heartbeat goroutines.
 func (s *Session) CloseWithCode(closeCode int) (err error) {
+	_, err = s.closeConnection(nil, closeCode)
+	return
+}
 
+// closeConnection ignores errors from a socket replaced by a later Open.
+// A nil wsConn explicitly closes the current connection.
+func (s *Session) closeConnection(wsConn *websocket.Conn, closeCode int) (bool, error) {
 	s.Logger.Debug("called")
 	s.Lock()
+	if wsConn != nil && s.wsConn != wsConn {
+		s.Unlock()
+		return false, nil
+	}
 	disconnected := s.wsConn != nil
+	var err error
 
 	if s.listening != nil {
 		s.Logger.Info("closing listening channel")
@@ -390,7 +453,7 @@ func (s *Session) CloseWithCode(closeCode int) (err error) {
 		s.OnConnectionChange(s, false)
 	}
 
-	return
+	return disconnected, err
 }
 
 // IsConnected reports whether the session currently has an open WebSocket.
@@ -403,16 +466,17 @@ func (s *Session) IsConnected() bool {
 // Shutdown closes the connection and cancels pending automatic reconnects.
 // A new Session must be created to connect again after Shutdown.
 func (s *Session) Shutdown() error {
+	s.connectionContext()
+	s.reconnectCancel()
 	s.Lock()
-	if s.reconnectStop == nil {
-		s.reconnectStop = make(chan struct{})
-	}
-	select {
-	case <-s.reconnectStop:
-	default:
-		close(s.reconnectStop)
-	}
 	s.ShouldReconnectOnError = false
 	s.Unlock()
 	return s.Close()
+}
+
+func (s *Session) connectionContext() context.Context {
+	s.reconnectOnce.Do(func() {
+		s.reconnectCtx, s.reconnectCancel = context.WithCancel(context.Background())
+	})
+	return s.reconnectCtx
 }

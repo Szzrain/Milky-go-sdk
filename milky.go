@@ -15,7 +15,6 @@ func New(wsGateway string, restGateway string, token string, logger Logger) (s *
 	// Create an empty Session interface.
 	s = &Session{
 		ShouldReconnectOnError: true,
-		reconnectStop:          make(chan struct{}),
 		MaxRestRetries:         3,
 		Client:                 &http.Client{Timeout: 20 * time.Second},
 		Dialer:                 websocket.DefaultDialer,
