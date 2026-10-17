@@ -4,6 +4,31 @@
 
 See [milky_test.go](./milky_test.go) for example code.
 
+### Connection lifecycle
+
+Set `session.OnConnectionChange` before calling `Open` to receive successful
+WebSocket connection and disconnection notifications, including automatic
+reconnections. Call `session.IsConnected()` to query the current WebSocket state.
+These APIs report the transport state; they do not confirm that the QQ account is
+logged in. Continue to handle `BotOffline` events and check login information as
+needed.
+
+The callback runs without holding the session lock and may query `IsConnected`.
+It should return promptly. Concurrent connection operations can change the state
+again before a callback finishes, so query `IsConnected` when the current state is
+needed.
+
+`Close` closes the current connection and permits a later `Open`, preserving its
+existing behavior. Use `Shutdown` when disposing of a session: it closes the
+connection, cancels reconnect backoff and pending dialing/handshakes, and prevents
+subsequent `Open` calls. Create a new session to connect again after `Shutdown`.
+
+Run the automated tests without the live QQ integration example:
+
+```sh
+go test -race ./... -skip '^TestMilky$'
+```
+
 ## Ref: 
 
 [DiscordGo](https://github.com/bwmarrin/discordgo)
